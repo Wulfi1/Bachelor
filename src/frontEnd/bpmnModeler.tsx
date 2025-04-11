@@ -10,15 +10,18 @@ const BpmnModelerComponent: React.FC = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const modelerRef = useRef<BpmnModeler | null>(null);
 
-  // Track selected SequenceFlow
-  const [selectedFlowId, setSelectedFlowId] = useState<string | null>(null);
-  // We store "Name" (display label) + "Probability"
-  const [selectedFlowName, setSelectedFlowName] = useState('');
-  const [selectedFlowProbability, setSelectedFlowProbability] = useState('');
+  // State for selected ExclusiveGateway and its outgoing flows
+  const [selectedGatewayId, setSelectedGatewayId] = useState<string | null>(null);
+  const [outgoingFlows, setOutgoingFlows] = useState<
+      { id: string; name: string; probability: string }[]
+  >([]);
 
-  // Whether or not we let the user set probability parameters
-  // (only if from an XOR that has 2+ outgoing flows)
-  const [canSetParams, setCanSetParams] = useState(false);
+  const totalProbability = outgoingFlows.reduce((sum, flow) => {
+    const val = parseFloat(flow.probability);
+    return sum + (isNaN(val) ? 0 : val);
+  }, 0);
+
+  const isProbValid = totalProbability <= 1;
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -31,7 +34,8 @@ const BpmnModelerComponent: React.FC = () => {
       }
     });
 
-    modelerRef.current.createDiagram()
+    modelerRef.current
+        .createDiagram()
         .then(() => {
           console.log('Blank BPMN diagram created with ProbabilityExtension');
         })
@@ -46,37 +50,27 @@ const BpmnModelerComponent: React.FC = () => {
         const newSel = e.newSelection || [];
         if (newSel.length === 1) {
           const elem = newSel[0];
-          // We only care if exactly one SequenceFlow is selected
-          if (elem.type === 'bpmn:SequenceFlow') {
-            setSelectedFlowId(elem.id);
 
+          // Check for ExclusiveGateway
+          if (elem.type === 'bpmn:ExclusiveGateway') {
             const bo = elem.businessObject;
-            const nameVal = bo && bo.name ? bo.name : '';
-            setSelectedFlowName(nameVal);
+            const outgoing = bo.outgoing || [];
 
-            const probVal = bo && bo.probability ? bo.probability : '';
-            setSelectedFlowProbability(probVal);
+            const flows = outgoing.map((flow: any) => ({
+              id: flow.id,
+              name: flow.name || '',
+              probability: flow.probability || ''
+            }));
 
-            // Check if the source is an ExclusiveGateway + has >=2 outgoings
-            let allowParams = false;
-            if (bo && bo.sourceRef && bo.sourceRef.$type === 'bpmn:ExclusiveGateway') {
-              // sourceRef.outgoing is an array of flows from that gateway
-              const outgoingArr = bo.sourceRef.outgoing || [];
-              if (outgoingArr.length >= 2) {
-                allowParams = true;
-              }
-            }
-            setCanSetParams(allowParams);
-
+            setSelectedGatewayId(elem.id);
+            setOutgoingFlows(flows);
             return;
           }
         }
 
-        // If not a single sequence flow
-        setSelectedFlowId(null);
-        setSelectedFlowName('');
-        setSelectedFlowProbability('');
-        setCanSetParams(false);
+        // Clear if not a valid gateway
+        setSelectedGatewayId(null);
+        setOutgoingFlows([]);
       });
     }
 
@@ -91,37 +85,40 @@ const BpmnModelerComponent: React.FC = () => {
     };
   }, []);
 
-  // Input handlers
-  const handleFlowNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSelectedFlowName(e.target.value);
-  };
-  const handleFlowProbabilityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSelectedFlowProbability(e.target.value);
+  // Handle field updates
+  const handleFlowFieldChange = (
+      flowId: string,
+      field: 'name' | 'probability',
+      value: string
+  ) => {
+    setOutgoingFlows((prev) =>
+        prev.map((flow) =>
+            flow.id === flowId ? { ...flow, [field]: value } : flow
+        )
+    );
   };
 
-  // "Update" the BPMN diagram with the combined label
-  const handleUpdateFlow = useCallback(() => {
-    if (!modelerRef.current || !selectedFlowId) return;
+  // Update the flows in the diagram
+  const handleUpdateFlows = useCallback(() => {
+    if (!modelerRef.current || !selectedGatewayId) return;
 
     const elementRegistry = modelerRef.current.get('elementRegistry') as any;
     const modeling = modelerRef.current.get('modeling') as any;
-    const flowElement = elementRegistry.get(selectedFlowId);
-    if (!flowElement) {
-      console.warn('No flow found with ID=', selectedFlowId);
-      return;
-    }
 
-    // Combine name + probability in the label
-    const label = `${selectedFlowName} (${selectedFlowProbability})`;
-    modeling.updateProperties(flowElement, {
-      name: label,
-      probability: selectedFlowProbability
+    outgoingFlows.forEach((flow) => {
+      const flowElement = elementRegistry.get(flow.id);
+      if (flowElement) {
+        const label = `${flow.name} (${flow.probability})`;
+        modeling.updateProperties(flowElement, {
+          name: label,
+          probability: flow.probability
+        });
+      }
     });
 
-    console.log(`Updated ${selectedFlowId}`, { name: label, probability: selectedFlowProbability });
-  }, [selectedFlowId, selectedFlowName, selectedFlowProbability]);
+    console.log('Updated outgoing flows of gateway', selectedGatewayId);
+  }, [selectedGatewayId, outgoingFlows]);
 
-  // Original "Export as BPMN XML"
   const handleExport = useCallback(async () => {
     if (!modelerRef.current) return;
     try {
@@ -131,7 +128,6 @@ const BpmnModelerComponent: React.FC = () => {
         return;
       }
 
-      // POST to your server
       const response = await fetch('http://localhost:5002/convert_bpmn_to_pnml', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -156,13 +152,11 @@ const BpmnModelerComponent: React.FC = () => {
 
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
-
     } catch (err) {
       console.error('Failed to convert BPMN to PNML:', err);
     }
   }, []);
 
-  // Original "Go to LogPPL"
   const goToLogPPL = useCallback(() => {
     window.location.href = 'http://localhost:5001/upload_page';
   }, []);
@@ -186,7 +180,7 @@ const BpmnModelerComponent: React.FC = () => {
             }}
         />
 
-        {selectedFlowId && canSetParams && (
+        {selectedGatewayId && outgoingFlows.length > 1 && (
             <div
                 style={{
                   position: 'absolute',
@@ -194,46 +188,47 @@ const BpmnModelerComponent: React.FC = () => {
                   right: '20px',
                   background: '#fff',
                   border: '1px solid #ccc',
-                  padding: '8px'
+                  padding: '8px',
+                  maxHeight: '60vh',
+                  overflowY: 'auto'
                 }}
             >
-              <h4>SequenceFlow: {selectedFlowId}</h4>
-              <div style={{ marginBottom: '6px' }}>
-                <label style={{ marginRight: '4px' }}>Name:</label>
-                <input
-                    type="text"
-                    value={selectedFlowName}
-                    onChange={handleFlowNameChange}
-                />
-              </div>
-              <div style={{ marginBottom: '6px' }}>
-                <label style={{ marginRight: '4px' }}>Probability:</label>
-                <input
-                    type="number"
-                    step="0.01"
-                    value={selectedFlowProbability}
-                    onChange={handleFlowProbabilityChange}
-                />
-              </div>
-              <button onClick={handleUpdateFlow}>
-                Update
-              </button>
-            </div>
-        )}
+              <h4>ExclusiveGateway: {selectedGatewayId}</h4>
+              {outgoingFlows.map((flow) => (
+                  <div key={flow.id} style={{ marginBottom: '10px' }}>
+                    <div><strong>{flow.id}</strong></div>
+                    <div>
+                      <label style={{ marginRight: '4px' }}>Name:</label>
+                      <input
+                          type="text"
+                          value={flow.name}
+                          onChange={(e) =>
+                              handleFlowFieldChange(flow.id, 'name', e.target.value)
+                          }
+                      />
+                    </div>
+                    <div>
+                      <label style={{ marginRight: '4px' }}>Probability:</label>
+                      <input
+                          type="number"
+                          step="0.01"
+                          value={flow.probability}
+                          onChange={(e) =>
+                              handleFlowFieldChange(flow.id, 'probability', e.target.value)
+                          }
+                      />
+                    </div>
+                  </div>
+              ))}
+              {!isProbValid && (
+                  <div style={{ color: 'red', marginBottom: '8px' }}>
+                    Total probability exceeds 1. Please adjust.
+                  </div>
+              )}
 
-        {selectedFlowId && !canSetParams && (
-            <div
-                style={{
-                  position: 'absolute',
-                  top: '60px',
-                  right: '20px',
-                  background: '#fff',
-                  border: '1px solid #ccc',
-                  padding: '8px'
-                }}
-            >
-              <h4>SequenceFlow: {selectedFlowId}</h4>
-              <p>This flow is not from an XOR gateway with multiple outgoing edges.</p>
+              <button onClick={handleUpdateFlows} disabled={!isProbValid}>
+                Update All
+              </button>
             </div>
         )}
       </div>
