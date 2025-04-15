@@ -21,7 +21,7 @@ const BpmnModelerComponent: React.FC = () => {
     return sum + (isNaN(val) ? 0 : val);
   }, 0);
 
-  const isProbValid = totalProbability <= 1;
+  const isProbValid = totalProbability === 1;
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -58,7 +58,7 @@ const BpmnModelerComponent: React.FC = () => {
 
             const flows = outgoing.map((flow: any) => ({
               id: flow.id,
-              name: flow.name || '',
+              name: flow.name?.split(':')[0].trim() || '',
               probability: flow.probability || ''
             }));
 
@@ -108,7 +108,7 @@ const BpmnModelerComponent: React.FC = () => {
     outgoingFlows.forEach((flow) => {
       const flowElement = elementRegistry.get(flow.id);
       if (flowElement) {
-        const label = `${flow.name} (${flow.probability})`;
+        const label = `${flow.name}: ${flow.probability}`;
         modeling.updateProperties(flowElement, {
           name: label,
           probability: flow.probability
@@ -222,7 +222,7 @@ const BpmnModelerComponent: React.FC = () => {
               ))}
               {!isProbValid && (
                   <div style={{ color: 'red', marginBottom: '8px' }}>
-                    Total probability exceeds 1. Please adjust.
+                    Total probability does not sum up to 1. Please adjust.
                   </div>
               )}
 
