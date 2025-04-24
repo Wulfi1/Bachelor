@@ -1,0 +1,60 @@
+<pnml>
+  <net id="" type="http://www.pnml.org/version-2009/grammar/pnmlcoremodel">
+    <name>
+      <text />
+    </name>
+    <page id="n0">
+      <place id="sink">
+        <name>
+          <text>sink</text>
+        </name>
+      </place>
+      <place id="exi_Gateway_14goj1k">
+        <name>
+          <text>exi_Gateway_14goj1k</text>
+        </name>
+      </place>
+      <place id="ent_Gateway_01ba8f6">
+        <name>
+          <text>ent_Gateway_01ba8f6</text>
+        </name>
+      </place>
+      <place id="source">
+        <name>
+          <text>source</text>
+        </name>
+        <initialMarking>
+          <text>1</text>
+        </initialMarking>
+      </place>
+      <transition id="Activity_1cggupp">
+        <name>
+          <text>t3</text>
+        </name>
+      </transition>
+      <transition id="Activity_1r2dhca">
+        <name>
+          <text>t4</text>
+        </name>
+      </transition>
+      <transition id="Activity_02htcmh">
+        <name>
+          <text>t1</text>
+        </name>
+      </transition>
+      <transition id="Activity_1urq4xv">
+        <name>
+          <text>t2</text>
+        </name>
+      </transition>
+      <arc id="1332502600448" source="exi_Gateway_14goj1k" target="Activity_1cggupp" />
+      <arc id="1332502600336" source="exi_Gateway_14goj1k" target="Activity_1urq4xv" />
+      <arc id="1332502599328" source="Activity_1cggupp" target="ent_Gateway_01ba8f6" />
+      <arc id="1332502600224" source="ent_Gateway_01ba8f6" target="Activity_1r2dhca" />
+      <arc id="1332502600112" source="Activity_02htcmh" target="exi_Gateway_14goj1k" />
+      <arc id="1332502600000" source="Activity_1r2dhca" target="sink" />
+      <arc id="1332502599888" source="Activity_1urq4xv" target="ent_Gateway_01ba8f6" />
+      <arc id="1332502600560" source="source" target="Activity_02htcmh" />
+    </page>
+  <finalmarkings><marking><place idref="sink"><text>1</text></place></marking></finalmarkings></net>
+</pnml>

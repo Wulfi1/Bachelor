@@ -157,6 +157,27 @@ const BpmnModelerComponent: React.FC = () => {
     }
   }, []);
 
+  const handleConvertToWebppl = useCallback(async () => {
+    try {
+      const response = await fetch('http://localhost:5002/convert_pnml_to_webppl', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pnmlXml: 'dummy' }),
+      });
+
+      if (!response.ok) {
+        console.error(`Error converting PNML to WebPPL: ${response.statusText}`);
+        return;
+      }
+
+      const result = await response.text();
+      console.log('Conversion executed. Result:', result);
+      alert('Conversion executed: ' + result);
+    } catch (err) {
+      console.error('Conversion to WebPPL failed:', err);
+    }
+  }, []);
+
   const goToLogPPL = useCallback(() => {
     window.location.href = 'http://localhost:5001/upload_page';
   }, []);
@@ -168,6 +189,9 @@ const BpmnModelerComponent: React.FC = () => {
         </button>
         <button onClick={goToLogPPL} style={{ marginLeft: '8px' }}>
           Go to LogPPL Upload
+        </button>
+        <button onClick={handleConvertToWebppl} style={{ marginLeft: '8px' }}>
+          Simulate
         </button>
 
         <div
