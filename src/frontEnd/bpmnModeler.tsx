@@ -1,8 +1,10 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import BpmnModeler from 'bpmn-js/lib/Modeler';
-
+import './style.css';
 import 'bpmn-js/dist/assets/diagram-js.css';
 import 'bpmn-js/dist/assets/bpmn-font/css/bpmn.css';
+import ReportModal, { ReportEntry } from './report';
+
 
 import ProbabilityExtension from './ProbabilityExtension';
 
@@ -15,6 +17,12 @@ const BpmnModelerComponent: React.FC = () => {
   const [outgoingFlows, setOutgoingFlows] = useState<
       { id: string; name: string; probability: string }[]
   >([]);
+  
+  //States for simulation report
+  const [report, setReport] = useState<ReportEntry[] | null>(null);
+  const [loadingReport, setLoadingReport] = useState(false);
+  const [reportError, setReportError] = useState<string | null>(null);
+  const [showReport, setShowReport] = useState(false);
 
   const totalProbability = outgoingFlows.reduce((sum, flow) => {
     const val = parseFloat(flow.probability);
@@ -157,24 +165,25 @@ const BpmnModelerComponent: React.FC = () => {
     }
   }, []);
 
-  const handleConvertToWebppl = useCallback(async () => {
+  const handleSimulate = useCallback(async () => {
+    setLoadingReport(true);
+    setReportError(null);
     try {
-      const response = await fetch('http://localhost:5002/convert_pnml_to_webppl', {
+      const res = await fetch('http://localhost:5002/convert_pnml_to_webppl', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ pnmlXml: 'dummy' }),
+        body: JSON.stringify({ pnmlXml: 'dummy' })
       });
-
-      if (!response.ok) {
-        console.error(`Error converting PNML to WebPPL: ${response.statusText}`);
-        return;
-      }
-
-      const result = await response.text();
-      console.log('Conversion executed. Result:', result);
-      alert('Conversion executed: ' + result);
-    } catch (err) {
-      console.error('Conversion to WebPPL failed:', err);
+      if (!res.ok) throw new Error(res.statusText);
+      const data: ReportEntry[] = await res.json();
+      setReport(data);
+      setShowReport(true);
+    } catch (err: any) {
+      console.error(err);
+      setReportError(err.message);
+      setShowReport(true);
+    } finally {
+      setLoadingReport(false);
     }
   }, []);
 
@@ -187,10 +196,10 @@ const BpmnModelerComponent: React.FC = () => {
         <button onClick={handleExport}>
           Export as BPMN XML
         </button>
-        <button onClick={goToLogPPL} style={{ marginLeft: '8px' }}>
+        <button onClick={goToLogPPL} style={{ marginLeft: 8 }}>
           Go to LogPPL Upload
         </button>
-        <button onClick={handleConvertToWebppl} style={{ marginLeft: '8px' }}>
+        <button onClick={handleSimulate} style={{ marginLeft: 8 }}>
           Simulate
         </button>
 
@@ -200,7 +209,7 @@ const BpmnModelerComponent: React.FC = () => {
               width: '100%',
               height: 'calc(80vh - 40px)',
               border: '1px solid #ccc',
-              marginTop: '8px'
+              marginTop: 8
             }}
         />
 
@@ -208,53 +217,55 @@ const BpmnModelerComponent: React.FC = () => {
             <div
                 style={{
                   position: 'absolute',
-                  top: '60px',
-                  right: '20px',
+                  top: 60,
+                  right: 20,
                   background: '#fff',
                   border: '1px solid #ccc',
-                  padding: '8px',
+                  padding: 8,
                   maxHeight: '60vh',
                   overflowY: 'auto'
                 }}
             >
-              <h4>ExclusiveGateway: {selectedGatewayId}</h4>
-              {outgoingFlows.map((flow) => (
-                  <div key={flow.id} style={{ marginBottom: '10px' }}>
-                    <div><strong>{flow.id}</strong></div>
+              <h4>ExclusiveGateway</h4>
+              {outgoingFlows.map(flow => (
+                  <div key={flow.id} style={{ marginBottom: 10 }}>
+                    <div><strong>Flow</strong></div>
                     <div>
-                      <label style={{ marginRight: '4px' }}>Name:</label>
+                      <label style={{ marginRight: 4 }}>Name:</label>
                       <input
                           type="text"
                           value={flow.name}
-                          onChange={(e) =>
-                              handleFlowFieldChange(flow.id, 'name', e.target.value)
-                          }
+                          onChange={e => handleFlowFieldChange(flow.id, 'name', e.target.value)}
                       />
                     </div>
                     <div>
-                      <label style={{ marginRight: '4px' }}>Probability:</label>
+                      <label style={{ marginRight: 4 }}>Probability:</label>
                       <input
                           type="number"
                           step="0.01"
                           value={flow.probability}
-                          onChange={(e) =>
-                              handleFlowFieldChange(flow.id, 'probability', e.target.value)
-                          }
+                          onChange={e => handleFlowFieldChange(flow.id, 'probability', e.target.value)}
                       />
                     </div>
                   </div>
               ))}
               {!isProbValid && (
-                  <div style={{ color: 'red', marginBottom: '8px' }}>
+                  <div style={{ color: 'red', marginBottom: 8 }}>
                     Total probability does not sum up to 1. Please adjust.
                   </div>
               )}
-
               <button onClick={handleUpdateFlows} disabled={!isProbValid}>
                 Update All
               </button>
             </div>
         )}
+        <ReportModal
+            show={showReport}
+            loading={loadingReport}
+            error={reportError}
+            report={report}
+            onClose={() => setShowReport(false)}
+        />
       </div>
   );
 };

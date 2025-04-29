@@ -3,10 +3,12 @@ import os
 import sys
 sys.path.append(os.path.abspath('C:/Users/sebastian.wulf/RiderProjects/Bachelor/src/dpn_converter/DPN-to-WebPPL'))
 import traceback
-from flask import Flask, request, make_response
+from flask import Flask, request, make_response, jsonify
 from flask_cors import CORS
 import tempfile
 import xml.etree.ElementTree as ET
+import subprocess, re
+from collections import Counter
 
 from pm4py.objects.bpmn.importer import importer as bpmn_importer
 from pm4py.objects.conversion.bpmn import converter as bpmn_converter
@@ -24,24 +26,27 @@ def parse_probabilities(bpmn_xml_str):
         'prob': 'http://example.com/probability'
     }
     flow_probs = {}
-    for seq_flow in root.findall('.//bpmn:sequenceFlow', ns):
-        fid = seq_flow.get('id')
-        if fid:
-            prob_val = seq_flow.get('{http://example.com/probability}probability')
-            if prob_val is not None:
-                flow_probs[fid] = prob_val
-    return flow_probs
+    flow_targets = {}
+    for sf in root.findall('.//bpmn:sequenceFlow', ns):
+        fid = sf.get('id')
+        prob = sf.get('{http://example.com/probability}probability')
+        tgt  = sf.get('targetRef')
+        if fid and prob is not None and tgt:
+            flow_probs[fid]   = prob
+            flow_targets[fid] = tgt
+    return flow_probs, flow_targets
 
-def inject_probs_on_transitions(pnml_str, flow_probs):
+def inject_probs_on_transitions(pnml_str, flow_probs, flow_targets):
     root = ET.fromstring(pnml_str)
-    for trans_el in root.findall('.//{*}transition'):
-        trans_id = trans_el.get('id', '')
-        for bpmn_flow_id, prob_val in flow_probs.items():
-            if bpmn_flow_id in trans_id:
-                prob_elem = ET.Element('probability')
-                prob_elem.set('value', prob_val)
-                trans_el.append(prob_elem)
-                break  
+    for fid, prob in flow_probs.items():
+        target_id = flow_targets.get(fid)
+        if not target_id:
+            continue
+        trans = root.find(f".//{{*}}transition[@id='{target_id}']")
+        if trans is not None:
+            p = ET.Element('probability')
+            p.set('value', prob)
+            trans.append(p)
     return ET.tostring(root, encoding='utf-8', method='xml').decode('utf-8')
 
 def inject_final_markings(pnml_str, fm):
@@ -76,7 +81,7 @@ def convert_bpmn_to_pnml():
 
     bpmn_xml = data['bpmnXml']
 
-    flow_probs = parse_probabilities(bpmn_xml)
+    flow_probs, flow_targets = parse_probabilities(bpmn_xml)
 
     with tempfile.NamedTemporaryFile(delete=False, suffix=".bpmn") as tmp_bpmn:
         tmp_bpmn_path = tmp_bpmn.name
@@ -88,7 +93,7 @@ def convert_bpmn_to_pnml():
         bpmn_graph = bpmn_importer.apply(tmp_bpmn_path)
         net, im, fm = bpmn_converter.apply(
             bpmn_graph,
-            variant=bpmn_converter.Variants.TO_PETRI_NET
+            variant=bpmn_converter.Variants.TO_PETRI_NET,
         )
 
         if not fm or len(fm) == 0:
@@ -104,7 +109,7 @@ def convert_bpmn_to_pnml():
         with open(output_file_path, 'r', encoding='utf-8') as f:
             pnml_str = f.read()
 
-        pnml_str = inject_probs_on_transitions(pnml_str, flow_probs)
+        pnml_str = inject_probs_on_transitions(pnml_str, flow_probs, flow_targets)
         pnml_str = inject_final_markings(pnml_str, fm)
     
         with open(output_file_path, 'w', encoding='utf-8') as f:
@@ -123,19 +128,60 @@ def convert_bpmn_to_pnml():
 
 @app.route('/convert_pnml_to_webppl', methods=['POST'])
 def convert_pnml_to_webppl():
-    data = request.get_json()
-    if not data or 'pnmlXml' not in data:
-        return "Missing pnmlXml", 400
+    try:
+        path_pnml   = os.path.abspath('generated/converted.pnml')
+        webPPL_code = convert_dpn_to_webPPL(
+            path_pnml, verbose=True,
+            simulation_steps=10,
+            sample_size=1000 
+        )
 
-    path_pnml = os.path.abspath('generated/converted.pnml')
+        wppl_path = os.path.abspath('generated/simple_auction.wppl')
+        with open(wppl_path, 'w', encoding='utf-8') as f:
+            f.write(webPPL_code)
 
-    webPPL_file = convert_dpn_to_webPPL(path_pnml, verbose=True, simulation_steps=10, sample_size=10)
-    print(webPPL_file)
+        cmd = ['npx', '--yes', 'webppl', wppl_path]
+        app.logger.info(f"Spawning WebPPL: {cmd}")
+        proc = subprocess.run(
+            cmd,
+            capture_output=True,
+            text=True,
+            check=True,
+            timeout=30
+        )
 
-    with open('simple_auction.wppl', 'w') as f:
-        f.write(webPPL_file)
+        stdout = proc.stdout
+    
+        raw_traces = re.findall(r'<trace>(.*?)</trace>', stdout, flags=re.DOTALL)
+        
+        simplified = []
+        for block in raw_traces:
+            activities = re.findall(r'<string key="concept:name" value="([^"]+)"', block)
+            simplified.append(" → ".join(activities))
+        
+        counts = Counter(simplified)
+        total = sum(counts.values()) or 1
 
-    return "Conversion complete", 200
+        report = [{
+            'trace': t.replace('\n',''),  
+            'count': counts[t],
+            'percentage': round(100.0 * counts[t] / total, 2)
+        } for t in counts]
+
+        return jsonify(report), 200
+
+    except subprocess.CalledProcessError as e:
+        app.logger.error(e.stdout)
+        app.logger.error(e.stderr)
+        return jsonify({
+            'error':   'WebPPL execution failed',
+            'stdout':  e.stdout,
+            'stderr':  e.stderr
+        }), 500
+
+    except Exception as e:
+        traceback.print_exc()
+        return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5002, debug=True)

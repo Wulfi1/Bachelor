@@ -4,19 +4,14 @@
       <text />
     </name>
     <page id="n0">
-      <place id="sink">
+      <place id="ent_Gateway_0zh8jef">
         <name>
-          <text>sink</text>
+          <text>ent_Gateway_0zh8jef</text>
         </name>
       </place>
-      <place id="exi_Gateway_14goj1k">
+      <place id="exi_Gateway_0z41tar">
         <name>
-          <text>exi_Gateway_14goj1k</text>
-        </name>
-      </place>
-      <place id="ent_Gateway_01ba8f6">
-        <name>
-          <text>ent_Gateway_01ba8f6</text>
+          <text>exi_Gateway_0z41tar</text>
         </name>
       </place>
       <place id="source">
@@ -27,34 +22,41 @@
           <text>1</text>
         </initialMarking>
       </place>
-      <transition id="Activity_1cggupp">
+      <place id="sink">
         <name>
-          <text>t3</text>
+          <text>sink</text>
         </name>
-      </transition>
-      <transition id="Activity_1r2dhca">
-        <name>
-          <text>t4</text>
-        </name>
-      </transition>
-      <transition id="Activity_02htcmh">
+      </place>
+      <transition id="Activity_0261oli">
         <name>
           <text>t1</text>
         </name>
       </transition>
-      <transition id="Activity_1urq4xv">
+      <transition id="d405ab9f-7a4f-4736-b1e6-3a7cf498c7a0">
+        <name>
+          <text>d405ab9f-7a4f-4736-b1e6-3a7cf498c7a0</text>
+        </name>
+        <toolspecific tool="ProM" version="6.4" activity="$invisible$" localNodeID="51e0727e-2402-4430-84fc-9b4a0937a15f" />
+      </transition>
+      <transition id="Gateway_0zh8jef">
+        <name>
+          <text>Gateway_0zh8jef</text>
+        </name>
+        <toolspecific tool="ProM" version="6.4" activity="$invisible$" localNodeID="e310f216-df5a-4f47-a2f5-450a90f49417" />
+      </transition>
+      <transition id="Activity_0ra6xho">
         <name>
           <text>t2</text>
         </name>
       </transition>
-      <arc id="1332502600448" source="exi_Gateway_14goj1k" target="Activity_1cggupp" />
-      <arc id="1332502600336" source="exi_Gateway_14goj1k" target="Activity_1urq4xv" />
-      <arc id="1332502599328" source="Activity_1cggupp" target="ent_Gateway_01ba8f6" />
-      <arc id="1332502600224" source="ent_Gateway_01ba8f6" target="Activity_1r2dhca" />
-      <arc id="1332502600112" source="Activity_02htcmh" target="exi_Gateway_14goj1k" />
-      <arc id="1332502600000" source="Activity_1r2dhca" target="sink" />
-      <arc id="1332502599888" source="Activity_1urq4xv" target="ent_Gateway_01ba8f6" />
-      <arc id="1332502600560" source="source" target="Activity_02htcmh" />
+      <arc id="1588008689280" source="Gateway_0zh8jef" target="sink" />
+      <arc id="1588008681888" source="source" target="d405ab9f-7a4f-4736-b1e6-3a7cf498c7a0" />
+      <arc id="1588008689840" source="exi_Gateway_0z41tar" target="Activity_0ra6xho" />
+      <arc id="1588008689728" source="exi_Gateway_0z41tar" target="Activity_0261oli" />
+      <arc id="1588008682448" source="ent_Gateway_0zh8jef" target="Gateway_0zh8jef" />
+      <arc id="1588008688608" source="Activity_0261oli" target="ent_Gateway_0zh8jef" />
+      <arc id="1588008689504" source="d405ab9f-7a4f-4736-b1e6-3a7cf498c7a0" target="exi_Gateway_0z41tar" />
+      <arc id="1588008689392" source="Activity_0ra6xho" target="ent_Gateway_0zh8jef" />
     </page>
   <finalmarkings><marking><place idref="sink"><text>1</text></place></marking></finalmarkings></net>
 </pnml>
