@@ -114,10 +114,10 @@ def convert_bpmn_to_pnml():
     
         with open(output_file_path, 'w', encoding='utf-8') as f:
             f.write(pnml_str)
-    
-        resp = make_response(pnml_str, 200)
-        resp.mimetype = "application/xml"
-        return resp
+
+            resp = make_response(pnml_str, 200)
+            resp.mimetype = "application/xml"
+            return resp
     
     except Exception as e:
         traceback.print_exc()

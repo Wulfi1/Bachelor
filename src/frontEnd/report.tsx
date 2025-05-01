@@ -1,4 +1,5 @@
 import React from 'react';
+import './style.css';
 
 export interface ReportEntry {
     trace: string;
@@ -24,8 +25,13 @@ const ReportModal: React.FC<ReportModalProps> = ({ show, loading, error, report,
                     ×
                 </button>
                 <h3>Simulation Report</h3>
-                {loading && <p>Loading…</p>}
+
+                {loading && (
+                    <div className="spinner" />
+                )}
+
                 {error && <p style={{ color: 'red' }}>Error: {error}</p>}
+
                 {report && (
                     <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                         <thead>

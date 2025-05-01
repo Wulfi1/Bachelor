@@ -4,7 +4,7 @@ import './style.css';
 import 'bpmn-js/dist/assets/diagram-js.css';
 import 'bpmn-js/dist/assets/bpmn-font/css/bpmn.css';
 import ReportModal, { ReportEntry } from './report';
-
+import GatewayDialog, {Flow} from './gateWayDialog';
 
 import ProbabilityExtension from './ProbabilityExtension';
 
@@ -14,9 +14,7 @@ const BpmnModelerComponent: React.FC = () => {
 
   // State for selected ExclusiveGateway and its outgoing flows
   const [selectedGatewayId, setSelectedGatewayId] = useState<string | null>(null);
-  const [outgoingFlows, setOutgoingFlows] = useState<
-      { id: string; name: string; probability: string }[]
-  >([]);
+  const [outgoingFlows, setOutgoingFlows] = useState<Flow[]>([]);
   
   //States for simulation report
   const [report, setReport] = useState<ReportEntry[] | null>(null);
@@ -127,7 +125,7 @@ const BpmnModelerComponent: React.FC = () => {
     console.log('Updated outgoing flows of gateway', selectedGatewayId);
   }, [selectedGatewayId, outgoingFlows]);
 
-  const handleExport = useCallback(async () => {
+  const handleExport = useCallback(async (downloadFile: boolean) => {
     if (!modelerRef.current) return;
     try {
       const { xml } = await modelerRef.current.saveXML({ format: true });
@@ -139,34 +137,38 @@ const BpmnModelerComponent: React.FC = () => {
       const response = await fetch('http://localhost:5002/convert_bpmn_to_pnml', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ bpmnXml: xml })
+        body: JSON.stringify({ bpmnXml: xml, download: downloadFile })
       });
 
       if (!response.ok) {
         console.error(`Server error: ${response.statusText}`);
         return;
       }
+      
+      if(downloadFile) {
+        const pnmlText = await response.text();
+        const blob = new Blob([pnmlText], {type: 'application/xml'});
+        const fileName = 'diagram.pnml';
+        const url = URL.createObjectURL(blob);
 
-      const pnmlText = await response.text();
-      const blob = new Blob([pnmlText], { type: 'application/xml' });
-      const fileName = 'diagram.pnml';
-      const url = URL.createObjectURL(blob);
-
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = fileName;
-      document.body.appendChild(link);
-      link.click();
-
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = fileName;
+        document.body.appendChild(link);
+        link.click();
+        
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
+      }
     } catch (err) {
       console.error('Failed to convert BPMN to PNML:', err);
     }
   }, []);
 
   const handleSimulate = useCallback(async () => {
+    await handleExport(false);
     setLoadingReport(true);
+    setShowReport(true);
     setReportError(null);
     try {
       const res = await fetch('http://localhost:5002/convert_pnml_to_webppl', {
@@ -177,29 +179,20 @@ const BpmnModelerComponent: React.FC = () => {
       if (!res.ok) throw new Error(res.statusText);
       const data: ReportEntry[] = await res.json();
       setReport(data);
-      setShowReport(true);
     } catch (err: any) {
       console.error(err);
       setReportError(err.message);
-      setShowReport(true);
     } finally {
       setLoadingReport(false);
     }
   }, []);
 
-  const goToLogPPL = useCallback(() => {
-    window.location.href = 'http://localhost:5001/upload_page';
-  }, []);
-
   return (
       <div style={{ width: '100%', height: '80vh', position: 'relative' }}>
-        <button onClick={handleExport}>
-          Export as BPMN XML
+        <button onClick={() => handleExport(true)} style={{ marginLeft: 22 }} className="button">
+          Export as PNML
         </button>
-        <button onClick={goToLogPPL} style={{ marginLeft: 8 }}>
-          Go to LogPPL Upload
-        </button>
-        <button onClick={handleSimulate} style={{ marginLeft: 8 }}>
+        <button onClick={handleSimulate} style={{ marginLeft: 8 }} className="button">
           Simulate
         </button>
 
@@ -212,53 +205,12 @@ const BpmnModelerComponent: React.FC = () => {
               marginTop: 8
             }}
         />
-
-        {selectedGatewayId && outgoingFlows.length > 1 && (
-            <div
-                style={{
-                  position: 'absolute',
-                  top: 60,
-                  right: 20,
-                  background: '#fff',
-                  border: '1px solid #ccc',
-                  padding: 8,
-                  maxHeight: '60vh',
-                  overflowY: 'auto'
-                }}
-            >
-              <h4>ExclusiveGateway</h4>
-              {outgoingFlows.map(flow => (
-                  <div key={flow.id} style={{ marginBottom: 10 }}>
-                    <div><strong>Flow</strong></div>
-                    <div>
-                      <label style={{ marginRight: 4 }}>Name:</label>
-                      <input
-                          type="text"
-                          value={flow.name}
-                          onChange={e => handleFlowFieldChange(flow.id, 'name', e.target.value)}
-                      />
-                    </div>
-                    <div>
-                      <label style={{ marginRight: 4 }}>Probability:</label>
-                      <input
-                          type="number"
-                          step="0.01"
-                          value={flow.probability}
-                          onChange={e => handleFlowFieldChange(flow.id, 'probability', e.target.value)}
-                      />
-                    </div>
-                  </div>
-              ))}
-              {!isProbValid && (
-                  <div style={{ color: 'red', marginBottom: 8 }}>
-                    Total probability does not sum up to 1. Please adjust.
-                  </div>
-              )}
-              <button onClick={handleUpdateFlows} disabled={!isProbValid}>
-                Update All
-              </button>
-            </div>
-        )}
+        <GatewayDialog
+            flows={outgoingFlows}
+            isValid={isProbValid}
+            onFieldChange={handleFlowFieldChange}
+            onUpdate={handleUpdateFlows}
+        />
         <ReportModal
             show={showReport}
             loading={loadingReport}
