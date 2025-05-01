@@ -5,8 +5,10 @@ import 'bpmn-js/dist/assets/diagram-js.css';
 import 'bpmn-js/dist/assets/bpmn-font/css/bpmn.css';
 import ReportModal, { ReportEntry } from './report';
 import GatewayDialog, {Flow} from './gateWayDialog';
+import TaskDialog, { TaskProps } from './taskDialog';
 
-import ProbabilityExtension from './ProbabilityExtension';
+import customPaletteProvider from "./customPaletteProvider";
+import ProbabilityExtension from "./ProbabilityExtension";
 
 const BpmnModelerComponent: React.FC = () => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -16,7 +18,10 @@ const BpmnModelerComponent: React.FC = () => {
   const [selectedGatewayId, setSelectedGatewayId] = useState<string | null>(null);
   const [outgoingFlows, setOutgoingFlows] = useState<Flow[]>([]);
   
-  //States for simulation report
+  // State for selected Activity
+  const [selectedTask, setSelectedTask] = useState<TaskProps | null>(null);
+  
+  // States for simulation report
   const [report, setReport] = useState<ReportEntry[] | null>(null);
   const [loadingReport, setLoadingReport] = useState(false);
   const [reportError, setReportError] = useState<string | null>(null);
@@ -43,7 +48,7 @@ const BpmnModelerComponent: React.FC = () => {
     modelerRef.current
         .createDiagram()
         .then(() => {
-          console.log('Blank BPMN diagram created with ProbabilityExtension');
+          console.log('Blank BPMN diagram created');
         })
         .catch((err: any) => {
           console.error('Could not create BPMN diagram', err);
@@ -59,6 +64,7 @@ const BpmnModelerComponent: React.FC = () => {
 
           // Check for ExclusiveGateway
           if (elem.type === 'bpmn:ExclusiveGateway') {
+            setSelectedTask(null);
             const bo = elem.businessObject;
             const outgoing = bo.outgoing || [];
 
@@ -72,11 +78,23 @@ const BpmnModelerComponent: React.FC = () => {
             setOutgoingFlows(flows);
             return;
           }
+          
+          if (elem.type === 'bpmn:Task') {
+            const bo = elem.businessObject;
+            setSelectedTask({
+              id: elem.id,
+              name: bo.name?.split(':')[0].trim() || '',
+              time: bo.time ? parseInt(bo.time, 10) : 0
+            });
+            setOutgoingFlows([]);
+            return;
+          }
         }
 
         // Clear if not a valid gateway
         setSelectedGatewayId(null);
         setOutgoingFlows([]);
+        setSelectedTask(null);
       });
     }
 
@@ -124,6 +142,29 @@ const BpmnModelerComponent: React.FC = () => {
 
     console.log('Updated outgoing flows of gateway', selectedGatewayId);
   }, [selectedGatewayId, outgoingFlows]);
+
+
+  const handleTaskFieldChange = (field: 'name'|'time', value: string) => {
+    if (!selectedTask) return;
+    setSelectedTask({
+      ...selectedTask,
+      [field]: field === 'time' ? parseInt(value, 10) : value
+    });
+  };
+
+  const handleUpdateTask = useCallback(() => {
+    if (!modelerRef.current || !selectedTask) return;
+    const modeling = modelerRef.current.get('modeling') as any;
+    const elementRegistry = modelerRef.current.get('elementRegistry') as any;
+    const taskElem = elementRegistry.get(selectedTask.id);
+    const label = `${selectedTask.name}: \n ${selectedTask.time} hours`;
+    modeling.updateProperties(taskElem, {
+      name: label,
+      time: String(selectedTask.time)
+    });
+    setSelectedTask(null);
+  }, [selectedTask]);
+
 
   const handleExport = useCallback(async (downloadFile: boolean) => {
     if (!modelerRef.current) return;
@@ -211,6 +252,12 @@ const BpmnModelerComponent: React.FC = () => {
             onFieldChange={handleFlowFieldChange}
             onUpdate={handleUpdateFlows}
         />
+        {selectedTask && <TaskDialog
+            task={selectedTask}
+            onFieldChange={handleTaskFieldChange}
+            onUpdate={handleUpdateTask}
+            onClose={() => setSelectedTask(null)}
+        />}
         <ReportModal
             show={showReport}
             loading={loadingReport}

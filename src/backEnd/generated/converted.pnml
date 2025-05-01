@@ -4,19 +4,9 @@
       <text />
     </name>
     <page id="n0">
-      <place id="exi_Gateway_10s40qn">
-        <name>
-          <text>exi_Gateway_10s40qn</text>
-        </name>
-      </place>
       <place id="sink">
         <name>
           <text>sink</text>
-        </name>
-      </place>
-      <place id="ent_Gateway_0epttq0">
-        <name>
-          <text>ent_Gateway_0epttq0</text>
         </name>
       </place>
       <place id="source">
@@ -27,36 +17,46 @@
           <text>1</text>
         </initialMarking>
       </place>
-      <transition id="Gateway_0epttq0">
+      <place id="exi_Gateway_1tkqjgp">
         <name>
-          <text>Gateway_0epttq0</text>
+          <text>exi_Gateway_1tkqjgp</text>
         </name>
-        <toolspecific tool="ProM" version="6.4" activity="$invisible$" localNodeID="33be2cc0-4c14-48bf-8fcf-4cd8e830cd7d" />
+      </place>
+      <place id="ent_Gateway_1n619re">
+        <name>
+          <text>ent_Gateway_1n619re</text>
+        </name>
+      </place>
+      <transition id="Gateway_1n619re">
+        <name>
+          <text>Gateway_1n619re</text>
+        </name>
+        <toolspecific tool="ProM" version="6.4" activity="$invisible$" localNodeID="d56d50c6-5e98-475c-bc5f-317341bc3eae" />
       </transition>
-      <transition id="Activity_1utdsb8">
+      <transition id="Activity_1s67x7z">
         <name>
-          <text>tis</text>
-        </name>
-      <probability value="0.9" /></transition>
-      <transition id="Activity_0vcjor1">
-        <name>
-          <text>hej med dig</text>
+          <text>t2</text>
         </name>
       <probability value="0.1" /></transition>
-      <transition id="290320f9-0191-420f-a583-1bd8f971a071">
+      <transition id="d9afdcf7-ff8a-4de4-aa77-075af3dd282f">
         <name>
-          <text>290320f9-0191-420f-a583-1bd8f971a071</text>
+          <text>d9afdcf7-ff8a-4de4-aa77-075af3dd282f</text>
         </name>
-        <toolspecific tool="ProM" version="6.4" activity="$invisible$" localNodeID="3485c763-02cd-4c2d-ac0f-ec3ab949808b" />
+        <toolspecific tool="ProM" version="6.4" activity="$invisible$" localNodeID="150846ef-5e48-484d-a37b-4f1578f40f38" />
       </transition>
-      <arc id="2130253920000" source="exi_Gateway_10s40qn" target="Activity_1utdsb8" />
-      <arc id="2130253919888" source="290320f9-0191-420f-a583-1bd8f971a071" target="exi_Gateway_10s40qn" />
-      <arc id="2130253919776" source="Activity_1utdsb8" target="ent_Gateway_0epttq0" />
-      <arc id="2128760279728" source="source" target="290320f9-0191-420f-a583-1bd8f971a071" />
-      <arc id="2130253918768" source="Gateway_0epttq0" target="sink" />
-      <arc id="2130253915072" source="exi_Gateway_10s40qn" target="Activity_0vcjor1" />
-      <arc id="2130253922016" source="Activity_0vcjor1" target="ent_Gateway_0epttq0" />
-      <arc id="2128760280176" source="ent_Gateway_0epttq0" target="Gateway_0epttq0" />
+      <transition id="Activity_0f8yp5g">
+        <name>
+          <text>t1</text>
+        </name>
+      <probability value="0.9" /></transition>
+      <arc id="2130254651792" source="exi_Gateway_1tkqjgp" target="Activity_1s67x7z" />
+      <arc id="2130254644624" source="exi_Gateway_1tkqjgp" target="Activity_0f8yp5g" />
+      <arc id="2130254648208" source="d9afdcf7-ff8a-4de4-aa77-075af3dd282f" target="exi_Gateway_1tkqjgp" />
+      <arc id="2128760477232" source="ent_Gateway_1n619re" target="Gateway_1n619re" />
+      <arc id="2128760476336" source="source" target="d9afdcf7-ff8a-4de4-aa77-075af3dd282f" />
+      <arc id="2130254649664" source="Activity_0f8yp5g" target="ent_Gateway_1n619re" />
+      <arc id="2130254657728" source="Gateway_1n619re" target="sink" />
+      <arc id="2130254647648" source="Activity_1s67x7z" target="ent_Gateway_1n619re" />
     </page>
   <finalmarkings><marking><place idref="sink"><text>1</text></place></marking></finalmarkings></net>
 </pnml>
