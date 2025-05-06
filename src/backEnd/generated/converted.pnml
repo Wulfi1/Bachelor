@@ -4,11 +4,6 @@
       <text />
     </name>
     <page id="n0">
-      <place id="sink">
-        <name>
-          <text>sink</text>
-        </name>
-      </place>
       <place id="source">
         <name>
           <text>source</text>
@@ -17,46 +12,52 @@
           <text>1</text>
         </initialMarking>
       </place>
-      <place id="exi_Gateway_1tkqjgp">
+      <place id="sink">
         <name>
-          <text>exi_Gateway_1tkqjgp</text>
+          <text>sink</text>
         </name>
       </place>
-      <place id="ent_Gateway_1n619re">
+      <place id="ent_Event_1ktxrd1">
         <name>
-          <text>ent_Gateway_1n619re</text>
+          <text>ent_Event_1ktxrd1</text>
         </name>
       </place>
-      <transition id="Gateway_1n619re">
+      <place id="exi_Gateway_1ipzs5x">
         <name>
-          <text>Gateway_1n619re</text>
+          <text>exi_Gateway_1ipzs5x</text>
         </name>
-        <toolspecific tool="ProM" version="6.4" activity="$invisible$" localNodeID="d56d50c6-5e98-475c-bc5f-317341bc3eae" />
+      </place>
+      <transition id="6b40ced1-60c4-4887-8c0f-a2e8fc389c2c">
+        <name>
+          <text>6b40ced1-60c4-4887-8c0f-a2e8fc389c2c</text>
+        </name>
+        <toolspecific tool="ProM" version="6.4" activity="$invisible$" localNodeID="a2d3d2d4-620d-4dd5-99de-f8e8dd61b6d3" />
       </transition>
-      <transition id="Activity_1s67x7z">
-        <name>
-          <text>t2</text>
-        </name>
-      <probability value="0.1" /></transition>
-      <transition id="d9afdcf7-ff8a-4de4-aa77-075af3dd282f">
-        <name>
-          <text>d9afdcf7-ff8a-4de4-aa77-075af3dd282f</text>
-        </name>
-        <toolspecific tool="ProM" version="6.4" activity="$invisible$" localNodeID="150846ef-5e48-484d-a37b-4f1578f40f38" />
-      </transition>
-      <transition id="Activity_0f8yp5g">
+      <transition id="Activity_1fsd8ov">
         <name>
           <text>t1</text>
         </name>
+      <probability value="0.1" /></transition>
+      <transition id="Event_1ktxrd1">
+        <name>
+          <text>Event_1ktxrd1</text>
+        </name>
+        <toolspecific tool="ProM" version="6.4" activity="$invisible$" localNodeID="2f075416-38f8-4e27-b996-3f77cdb5be95" />
       <probability value="0.9" /></transition>
-      <arc id="2130254651792" source="exi_Gateway_1tkqjgp" target="Activity_1s67x7z" />
-      <arc id="2130254644624" source="exi_Gateway_1tkqjgp" target="Activity_0f8yp5g" />
-      <arc id="2130254648208" source="d9afdcf7-ff8a-4de4-aa77-075af3dd282f" target="exi_Gateway_1tkqjgp" />
-      <arc id="2128760477232" source="ent_Gateway_1n619re" target="Gateway_1n619re" />
-      <arc id="2128760476336" source="source" target="d9afdcf7-ff8a-4de4-aa77-075af3dd282f" />
-      <arc id="2130254649664" source="Activity_0f8yp5g" target="ent_Gateway_1n619re" />
-      <arc id="2130254657728" source="Gateway_1n619re" target="sink" />
-      <arc id="2130254647648" source="Activity_1s67x7z" target="ent_Gateway_1n619re" />
+      <transition id="sfl_Flow_0h1l6kc">
+        <name>
+          <text>sfl_Flow_0h1l6kc</text>
+        </name>
+        <toolspecific tool="ProM" version="6.4" activity="$invisible$" localNodeID="64226ab5-f2f3-4904-8917-1e8505febe3a" />
+      </transition>
+      <arc id="2204365432080" source="Activity_1fsd8ov" target="ent_Event_1ktxrd1" />
+      <arc id="2204365431968" source="Event_1ktxrd1" target="sink" />
+      <arc id="2204365434656" source="exi_Gateway_1ipzs5x" target="sfl_Flow_0h1l6kc" />
+      <arc id="2204365432640" source="exi_Gateway_1ipzs5x" target="Activity_1fsd8ov" />
+      <arc id="2204366096336" source="ent_Event_1ktxrd1" target="Event_1ktxrd1" />
+      <arc id="2204365626448" source="source" target="6b40ced1-60c4-4887-8c0f-a2e8fc389c2c" />
+      <arc id="2204365432528" source="6b40ced1-60c4-4887-8c0f-a2e8fc389c2c" target="exi_Gateway_1ipzs5x" />
+      <arc id="2204365432304" source="sfl_Flow_0h1l6kc" target="ent_Event_1ktxrd1" />
     </page>
   <finalmarkings><marking><place idref="sink"><text>1</text></place></marking></finalmarkings></net>
 </pnml>

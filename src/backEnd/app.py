@@ -37,17 +37,40 @@ def parse_probabilities(bpmn_xml_str):
     return flow_probs, flow_targets
 
 def inject_probs_on_transitions(pnml_str, flow_probs, flow_targets):
+    # parse into an ElementTree
     root = ET.fromstring(pnml_str)
+
+    # find every transition tag, namespace-agnostic
+    transitions = {
+        t.get('id'): t
+        for t in root.findall('.//{*}transition')
+    }
+
     for fid, prob in flow_probs.items():
-        target_id = flow_targets.get(fid)
-        if not target_id:
+        # 1) try the gateway→target mapping
+        target_id = flow_targets.get(fid, "")
+        trans = transitions.get(target_id)
+
+        # 2) fallback to the invisible transition whose ID == your sequenceFlow ID
+        if trans is None:
+            trans = transitions.get(fid)
+
+        if trans is None:
+            # sanity-check: warn when we miss entirely
+            print(f"[inject_probs] no transition found for flow `{fid}` (target `{target_id}`)")
             continue
-        trans = root.find(f".//{{*}}transition[@id='{target_id}']")
-        if trans is not None:
-            p = ET.Element('probability')
-            p.set('value', prob)
-            trans.append(p)
+
+        # append the probability element
+        p = ET.Element('probability')
+        p.set('value', prob)
+        trans.append(p)
+
+    # serialize back to string
     return ET.tostring(root, encoding='utf-8', method='xml').decode('utf-8')
+
+
+
+
 
 def inject_final_markings(pnml_str, fm):
     root = ET.fromstring(pnml_str)
@@ -128,12 +151,20 @@ def convert_bpmn_to_pnml():
 
 @app.route('/convert_pnml_to_webppl', methods=['POST'])
 def convert_pnml_to_webppl():
+
+    data = request.get_json()
+    if not data:
+        return "No data received in simulation", 400
+    
+    simulationSteps = data['simulationSteps']
+    sampleSize = data['sampleSize']
+    
     try:
         path_pnml   = os.path.abspath('generated/converted.pnml')
         webPPL_code = convert_dpn_to_webPPL(
             path_pnml, verbose=True,
-            simulation_steps=10,
-            sample_size=1000 
+            simulation_steps=simulationSteps,
+            sample_size=sampleSize 
         )
 
         wppl_path = os.path.abspath('generated/simple_auction.wppl')
