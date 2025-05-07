@@ -4,26 +4,6 @@
       <text />
     </name>
     <page id="n0">
-      <place id="exi_Gateway_12ld03x">
-        <name>
-          <text>exi_Gateway_12ld03x</text>
-        </name>
-      </place>
-      <place id="ent_Gateway_12ld03x">
-        <name>
-          <text>ent_Gateway_12ld03x</text>
-        </name>
-      </place>
-      <place id="exi_Gateway_0ks9nf6">
-        <name>
-          <text>exi_Gateway_0ks9nf6</text>
-        </name>
-      </place>
-      <place id="sink">
-        <name>
-          <text>sink</text>
-        </name>
-      </place>
       <place id="source">
         <name>
           <text>source</text>
@@ -32,63 +12,50 @@
           <text>1</text>
         </initialMarking>
       </place>
-      <place id="ent_Activity_10wv9wo">
+      <place id="sink">
         <name>
-          <text>ent_Activity_10wv9wo</text>
+          <text>sink</text>
         </name>
       </place>
-      <transition id="Activity_0htj0z1">
+      <place id="ent_Gateway_07gj2yv">
         <name>
-          <text>t2:  30-60 min</text>
+          <text>ent_Gateway_07gj2yv</text>
         </name>
-      <probability value="0.8" /><time min="30.0" max="60.0" /></transition>
-      <transition id="sfl_Flow_1jx897x">
+      </place>
+      <place id="exi_Gateway_0u7iw5c">
         <name>
-          <text>sfl_Flow_1jx897x</text>
+          <text>exi_Gateway_0u7iw5c</text>
         </name>
-        <toolspecific tool="ProM" version="6.4" activity="$invisible$" localNodeID="caccd376-01e1-4f42-a878-31b419f12747" />
+      </place>
+      <transition id="Gateway_07gj2yv">
+        <name>
+          <text>Gateway_07gj2yv</text>
+        </name>
+        <toolspecific tool="ProM" version="6.4" activity="$invisible$" localNodeID="04c881f6-849b-48df-b8f9-bafbf468b0da" />
       </transition>
-      <transition id="Activity_1typn28">
+      <transition id="Activity_06zvaen">
         <name>
-          <text>t3:  15-30 min</text>
+          <text>t3:  10-20 min</text>
         </name>
-      <probability value="0.2" /><time min="15.0" max="30.0" /></transition>
-      <transition id="Activity_10wv9wo">
+      <probability value="0.2" /><time min="10.0" max="20.0" /></transition>
+      <transition id="Activity_0g4dald">
         <name>
-          <text>t1:  5-10 min</text>
+          <text>t2:  15-30 min</text>
         </name>
-      <probability value="0.2" /><time min="5.0" max="10.0" /></transition>
-      <transition id="Activity_0pbzl84">
+      <probability value="0.8" /><time min="15.0" max="30.0" /></transition>
+      <transition id="Activity_00ij15q">
         <name>
-          <text>t4:  10-20 min</text>
+          <text>t1:  30-60 min</text>
         </name>
-      <probability value="0.8" /><time min="10.0" max="20.0" /></transition>
-      <transition id="b6a06a73-7ed5-4aa8-91e6-94f7671f859e">
-        <name>
-          <text>b6a06a73-7ed5-4aa8-91e6-94f7671f859e</text>
-        </name>
-        <toolspecific tool="ProM" version="6.4" activity="$invisible$" localNodeID="6e74f71a-2dbf-43b5-867e-3c61bc45ed13" />
-      </transition>
-      <transition id="Gateway_12ld03x">
-        <name>
-          <text>Gateway_12ld03x</text>
-        </name>
-        <toolspecific tool="ProM" version="6.4" activity="$invisible$" localNodeID="86c8335d-f284-4564-b1ea-6855b2dd45cd" />
-      </transition>
-      <arc id="2387276391696" source="exi_Gateway_0ks9nf6" target="Activity_0htj0z1" />
-      <arc id="2387276390912" source="Activity_10wv9wo" target="exi_Gateway_0ks9nf6" />
-      <arc id="2387276390800" source="Activity_0pbzl84" target="sink" />
-      <arc id="2387276389904" source="sfl_Flow_1jx897x" target="ent_Activity_10wv9wo" />
-      <arc id="2387276386208" source="exi_Gateway_12ld03x" target="sfl_Flow_1jx897x" />
-      <arc id="2387276391584" source="exi_Gateway_0ks9nf6" target="Activity_1typn28" />
-      <arc id="2387276391472" source="exi_Gateway_12ld03x" target="Activity_0pbzl84" />
-      <arc id="2387276391360" source="Activity_1typn28" target="ent_Gateway_12ld03x" />
-      <arc id="2387276216400" source="Gateway_12ld03x" target="exi_Gateway_12ld03x" />
-      <arc id="2387276382288" source="ent_Activity_10wv9wo" target="Activity_10wv9wo" />
-      <arc id="2387276383184" source="source" target="b6a06a73-7ed5-4aa8-91e6-94f7671f859e" />
-      <arc id="2387276391248" source="Activity_0htj0z1" target="ent_Gateway_12ld03x" />
-      <arc id="2387276216288" source="ent_Gateway_12ld03x" target="Gateway_12ld03x" />
-      <arc id="2387276391024" source="b6a06a73-7ed5-4aa8-91e6-94f7671f859e" target="ent_Activity_10wv9wo" />
+      <time min="30.0" max="60.0" /></transition>
+      <arc id="2581402420736" source="ent_Gateway_07gj2yv" target="Gateway_07gj2yv" />
+      <arc id="2581402427904" source="Activity_06zvaen" target="ent_Gateway_07gj2yv" />
+      <arc id="2581402427680" source="Gateway_07gj2yv" target="sink" />
+      <arc id="2581402427456" source="Activity_0g4dald" target="ent_Gateway_07gj2yv" />
+      <arc id="2581402428240" source="source" target="Activity_00ij15q" />
+      <arc id="2581402428128" source="exi_Gateway_0u7iw5c" target="Activity_06zvaen" />
+      <arc id="2581402427232" source="Activity_00ij15q" target="exi_Gateway_0u7iw5c" />
+      <arc id="2581402428016" source="exi_Gateway_0u7iw5c" target="Activity_0g4dald" />
     </page>
   <finalmarkings><marking><place idref="sink"><text>1</text></place></marking></finalmarkings></net>
 </pnml>
