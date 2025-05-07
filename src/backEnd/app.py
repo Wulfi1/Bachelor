@@ -37,40 +37,53 @@ def parse_probabilities(bpmn_xml_str):
     return flow_probs, flow_targets
 
 def inject_probs_on_transitions(pnml_str, flow_probs, flow_targets):
-    # parse into an ElementTree
     root = ET.fromstring(pnml_str)
-
-    # find every transition tag, namespace-agnostic
     transitions = {
         t.get('id'): t
         for t in root.findall('.//{*}transition')
     }
 
     for fid, prob in flow_probs.items():
-        # 1) try the gateway→target mapping
         target_id = flow_targets.get(fid, "")
         trans = transitions.get(target_id)
-
-        # 2) fallback to the invisible transition whose ID == your sequenceFlow ID
         if trans is None:
             trans = transitions.get(fid)
 
         if trans is None:
-            # sanity-check: warn when we miss entirely
             print(f"[inject_probs] no transition found for flow `{fid}` (target `{target_id}`)")
             continue
-
-        # append the probability element
         p = ET.Element('probability')
         p.set('value', prob)
         trans.append(p)
-
-    # serialize back to string
     return ET.tostring(root, encoding='utf-8', method='xml').decode('utf-8')
 
+def parse_time_intervals(bpmn_xml_str):
+    root = ET.fromstring(bpmn_xml_str)
+    ns = {
+        'bpmn': 'http://www.omg.org/spec/BPMN/20100524/MODEL',
+        'time': 'http://example.com/time'
+    }
+    time_map = {}
+    # find every bpmn:task with a time extension
+    for task in root.findall('.//bpmn:task', ns):
+        tid   = task.get('id')
+        tmin  = task.get('{http://example.com/time}timeMin')
+        tmax  = task.get('{http://example.com/time}timeMax')
+        if tid and tmin is not None and tmax is not None:
+            time_map[tid] = (float(tmin), float(tmax))
+    return time_map
 
-
-
+def inject_times_on_transitions(pnml_str, time_map):
+    root = ET.fromstring(pnml_str)
+    for t in root.findall('.//{*}transition'):
+        tid = t.get('id')
+        if tid in time_map:
+            tmin, tmax = time_map[tid]
+            time_el = ET.Element('time')
+            time_el.set('min', str(tmin))
+            time_el.set('max', str(tmax))
+            t.append(time_el)
+    return ET.tostring(root, encoding='utf-8', method='xml').decode('utf-8')
 
 def inject_final_markings(pnml_str, fm):
     root = ET.fromstring(pnml_str)
@@ -95,7 +108,6 @@ def inject_final_markings(pnml_str, fm):
 
     return ET.tostring(root, encoding='utf-8', method='xml').decode('utf-8')
 
-
 @app.route('/convert_bpmn_to_pnml', methods=['POST'])
 def convert_bpmn_to_pnml():
     data = request.get_json()
@@ -105,6 +117,7 @@ def convert_bpmn_to_pnml():
     bpmn_xml = data['bpmnXml']
 
     flow_probs, flow_targets = parse_probabilities(bpmn_xml)
+    time_map = parse_time_intervals(bpmn_xml)
 
     with tempfile.NamedTemporaryFile(delete=False, suffix=".bpmn") as tmp_bpmn:
         tmp_bpmn_path = tmp_bpmn.name
@@ -133,6 +146,7 @@ def convert_bpmn_to_pnml():
             pnml_str = f.read()
 
         pnml_str = inject_probs_on_transitions(pnml_str, flow_probs, flow_targets)
+        pnml_str = inject_times_on_transitions(pnml_str, time_map)
         pnml_str = inject_final_markings(pnml_str, fm)
     
         with open(output_file_path, 'w', encoding='utf-8') as f:
@@ -182,22 +196,43 @@ def convert_pnml_to_webppl():
         )
 
         stdout = proc.stdout
-    
-        raw_traces = re.findall(r'<trace>(.*?)</trace>', stdout, flags=re.DOTALL)
-        
-        simplified = []
-        for block in raw_traces:
-            activities = re.findall(r'<string key="concept:name" value="([^"]+)"', block)
-            simplified.append(" → ".join(activities))
-        
-        counts = Counter(simplified)
-        total = sum(counts.values()) or 1
 
-        report = [{
-            'trace': t.replace('\n',''),  
-            'count': counts[t],
-            'percentage': round(100.0 * counts[t] / total, 2)
-        } for t in counts]
+        raw_traces = re.findall(r'<trace>(.*?)</trace>', stdout, flags=re.DOTALL)
+
+        trace_times = []
+        for block in raw_traces:
+            activities = re.findall(r'<string key="concept:name" value="([^"]+)"', block )
+            trace_str = " → ".join(activities)
+
+            time_strs = re.findall(r'<string key="totalTime" value="([^"]+)"', block)
+            # if no tags found, fall back to None
+            if time_strs:
+                    total_time = sum(float(t) for t in time_strs)
+            else:
+                total_time = None
+
+            trace_times.append((trace_str, total_time))
+
+        from collections import defaultdict
+        time_lists = defaultdict(list)
+        for tr, tt in trace_times:
+            if tt is not None:
+                time_lists[tr].append(tt)
+
+        counts = Counter(tr for tr, _ in trace_times)
+        total_runs = len(trace_times) or 1
+
+        report = []
+        for tr, times in time_lists.items():
+            count      = counts[tr]
+            percentage = round(100.0 * count / total_runs, 2)
+            avg_time   = round(sum(times) / len(times), 2)
+            report.append({
+                'trace':      tr,
+                'count':      count,
+                'percentage': percentage,
+                'avgTime':    avg_time
+            })
 
         return jsonify(report), 200
 
@@ -205,9 +240,9 @@ def convert_pnml_to_webppl():
         app.logger.error(e.stdout)
         app.logger.error(e.stderr)
         return jsonify({
-            'error':   'WebPPL execution failed',
-            'stdout':  e.stdout,
-            'stderr':  e.stderr
+            'error':  'WebPPL execution failed',
+            'stdout': e.stdout,
+            'stderr': e.stderr
         }), 500
 
     except Exception as e:

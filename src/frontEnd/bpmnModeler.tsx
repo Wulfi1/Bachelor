@@ -9,6 +9,7 @@ import TaskDialog, { TaskProps } from './taskDialog';
 
 import customPaletteProvider from "./customPaletteProvider";
 import ProbabilityExtension from "./ProbabilityExtension";
+import TimeExtension from "./TimeExtension";
 
 const BpmnModelerComponent: React.FC = () => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -27,6 +28,10 @@ const BpmnModelerComponent: React.FC = () => {
   const [reportError, setReportError] = useState<string | null>(null);
   const [showReport, setShowReport] = useState(false);
 
+  // New state for simulation parameters
+  const [sampleSize, setSampleSize] = useState<string>("10");
+  const [simulationSteps, setSimulationSteps] = useState<string>("10");
+
   const totalProbability = outgoingFlows.reduce((sum, flow) => {
     const val = parseFloat(flow.probability);
     return sum + (isNaN(val) ? 0 : val);
@@ -41,8 +46,10 @@ const BpmnModelerComponent: React.FC = () => {
       container: containerRef.current,
       keyboard: { bindTo: window },
       moddleExtensions: {
-        probability: ProbabilityExtension
-      }
+        probability: ProbabilityExtension,
+        time: TimeExtension
+      },
+      additionalModules: [ customPaletteProvider ]
     });
 
     modelerRef.current
@@ -84,7 +91,8 @@ const BpmnModelerComponent: React.FC = () => {
             setSelectedTask({
               id: elem.id,
               name: bo.name?.split(':')[0].trim() || '',
-              time: bo.time ? parseInt(bo.time, 10) : 0
+              timeMin: bo.timeMin ? parseInt(bo.timeMin, 10) : 0,
+              timeMax: bo.timeMax ? parseInt(bo.timeMax, 10) : 0
             });
             setOutgoingFlows([]);
             return;
@@ -144,11 +152,14 @@ const BpmnModelerComponent: React.FC = () => {
   }, [selectedGatewayId, outgoingFlows]);
 
 
-  const handleTaskFieldChange = (field: 'name'|'time', value: string) => {
+  const handleTaskFieldChange = (field: 'name'|'timeMin'|'timeMax', value: string) => {
     if (!selectedTask) return;
     setSelectedTask({
       ...selectedTask,
-      [field]: field === 'time' ? parseInt(value, 10) : value
+      [field]:
+          field === 'name'
+              ? value
+              : parseInt(value, 10)
     });
   };
 
@@ -157,10 +168,11 @@ const BpmnModelerComponent: React.FC = () => {
     const modeling = modelerRef.current.get('modeling') as any;
     const elementRegistry = modelerRef.current.get('elementRegistry') as any;
     const taskElem = elementRegistry.get(selectedTask.id);
-    const label = `${selectedTask.name}: \n ${selectedTask.time} hours`;
+    const label = `${selectedTask.name}: \n ${selectedTask.timeMin}-${selectedTask.timeMax} min`;
     modeling.updateProperties(taskElem, {
       name: label,
-      time: String(selectedTask.time)
+      timeMin: String(selectedTask.timeMin),
+      timeMax: String(selectedTask.timeMax)
     });
     setSelectedTask(null);
   }, [selectedTask]);
@@ -215,7 +227,7 @@ const BpmnModelerComponent: React.FC = () => {
       const res = await fetch('http://localhost:5002/convert_pnml_to_webppl', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ pnmlXml: 'dummy' })
+        body: JSON.stringify({ pnmlXml: 'dummy', simulationSteps, sampleSize})
       });
       if (!res.ok) throw new Error(res.statusText);
       const data: ReportEntry[] = await res.json();
@@ -226,7 +238,7 @@ const BpmnModelerComponent: React.FC = () => {
     } finally {
       setLoadingReport(false);
     }
-  }, []);
+  }, [sampleSize, simulationSteps, handleExport]);
 
   return (
       <div style={{ width: '100%', height: '80vh', position: 'relative' }}>
@@ -236,7 +248,24 @@ const BpmnModelerComponent: React.FC = () => {
         <button onClick={handleSimulate} style={{ marginLeft: 8 }} className="button">
           Simulate
         </button>
-
+        <span style={{ marginLeft: 12, fontSize: '0.9rem' }}>
+        Sample size:
+        <input
+            type="number"
+            value={sampleSize}
+            onChange={e => setSampleSize(e.target.value)}
+            placeholder=""
+            style={{ width: 60, margin: '0 8px' }}
+        />
+        Simulation steps:
+        <input
+            type="number"
+            value={simulationSteps}
+            onChange={e => setSimulationSteps(e.target.value)}
+            placeholder=""
+            style={{ width: 60, margin: '0 8px' }}
+        />
+      </span>
         <div
             ref={containerRef}
             style={{

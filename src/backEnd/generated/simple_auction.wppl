@@ -1,136 +1,248 @@
-var probabilities = [null,null,null,null];
+
+// Transition IDs in sampling order
+var idList = ["sfl_Flow_1jx897x","Activity_10wv9wo","b6a06a73_7ed5_4aa8_91e6_94f7671f859e","Activity_0htj0z1","Activity_0pbzl84","Activity_1typn28","Gateway_12ld03x"];
+
+// Probabilities map (default 1)
+var probMap = { "Activity_10wv9wo":0.2,"Activity_0htj0z1":0.8,"Activity_0pbzl84":0.8,"Activity_1typn28":0.2 };
+var probabilities = map(function(id) { return probMap[id] != null ? probMap[id] : 1; }, idList);
+
+// Time interval maps and sampled durations
+var timeMinMap = { "Activity_10wv9wo":5.0,"Activity_0htj0z1":30.0,"Activity_0pbzl84":10.0,"Activity_1typn28":15.0 };
+var timeMaxMap = { "Activity_10wv9wo":10.0,"Activity_0htj0z1":60.0,"Activity_0pbzl84":20.0,"Activity_1typn28":30.0 };
+var durations   = map(function(id) { 
+    var mn = timeMinMap[id], mx = timeMaxMap[id]; 
+    return (typeof mn === 'number' && typeof mx === 'number') 
+           ? uniform(mn, mx) 
+           : 0; 
+}, idList);
+
+// Store globally
+globalStore.idList        = idList;
 globalStore.probabilities = probabilities;
+globalStore.durations    = durations;
 
 var init = function(){
 globalStore.countEnabled = 0;
 globalStore.trace = "";
-globalStore.exi_Gateway_13lsnlh = 0;
-globalStore.source = 1;
-globalStore.ent_Gateway_0km538f = 0;
+globalStore.exi_Gateway_12ld03x = 0;
 globalStore.sink = 0;
+globalStore.ent_Gateway_12ld03x = 0;
+globalStore.ent_Activity_10wv9wo = 0;
+globalStore.source = 1;
+globalStore.exi_Gateway_0ks9nf6 = 0;
 
-globalStore.enabled_Activity_1ntvmx3 = false; // t1
-globalStore.enabled_de43c155_92bd_41de_810c_fe08928639cb = false; // None
-globalStore.enabled_Gateway_0km538f = false; // None
-globalStore.enabled_Activity_1mp11bm = false; // t2
+globalStore.enabled_sfl_Flow_1jx897x = false; // None
+globalStore.enabled_Activity_10wv9wo = false; // t1:  5-10 min
+globalStore.enabled_b6a06a73_7ed5_4aa8_91e6_94f7671f859e = false; // None
+globalStore.enabled_Activity_0htj0z1 = false; // t2:  30-60 min
+globalStore.enabled_Activity_0pbzl84 = false; // t4:  10-20 min
+globalStore.enabled_Activity_1typn28 = false; // t3:  15-30 min
+globalStore.enabled_Gateway_12ld03x = false; // None
 
-globalStore.fired_Activity_1ntvmx3 = 0;
-globalStore.fired_de43c155_92bd_41de_810c_fe08928639cb = 0;
-globalStore.fired_Gateway_0km538f = 0;
-globalStore.fired_Activity_1mp11bm = 0;
+globalStore.fired_sfl_Flow_1jx897x = 0;
+globalStore.fired_Activity_10wv9wo = 0;
+globalStore.fired_b6a06a73_7ed5_4aa8_91e6_94f7671f859e = 0;
+globalStore.fired_Activity_0htj0z1 = 0;
+globalStore.fired_Activity_0pbzl84 = 0;
+globalStore.fired_Activity_1typn28 = 0;
+globalStore.fired_Gateway_12ld03x = 0;
 
 globalStore.vars = {  };
 
 }
 
-var update_enabled_Activity_1ntvmx3 = function() {
-if(globalStore.exi_Gateway_13lsnlh > 0) {
-if (!globalStore.enabled_Activity_1ntvmx3) {
-globalStore.enabled_Activity_1ntvmx3 = true;
+var update_enabled_sfl_Flow_1jx897x = function() {
+if(globalStore.exi_Gateway_12ld03x > 0) {
+if (!globalStore.enabled_sfl_Flow_1jx897x) {
+globalStore.enabled_sfl_Flow_1jx897x = true;
 globalStore.countEnabled = globalStore.countEnabled + 1;
 }
 } else {
-if (globalStore.enabled_Activity_1ntvmx3) {
-globalStore.enabled_Activity_1ntvmx3 = false;
+if (globalStore.enabled_sfl_Flow_1jx897x) {
+globalStore.enabled_sfl_Flow_1jx897x = false;
 globalStore.countEnabled = globalStore.countEnabled - 1;
 }
 }
 }
 
-var update_enabled_de43c155_92bd_41de_810c_fe08928639cb = function() {
+var update_enabled_Activity_10wv9wo = function() {
+if(globalStore.ent_Activity_10wv9wo > 0) {
+if (!globalStore.enabled_Activity_10wv9wo) {
+globalStore.enabled_Activity_10wv9wo = true;
+globalStore.countEnabled = globalStore.countEnabled + 1;
+}
+} else {
+if (globalStore.enabled_Activity_10wv9wo) {
+globalStore.enabled_Activity_10wv9wo = false;
+globalStore.countEnabled = globalStore.countEnabled - 1;
+}
+}
+}
+
+var update_enabled_b6a06a73_7ed5_4aa8_91e6_94f7671f859e = function() {
 if(globalStore.source > 0) {
-if (!globalStore.enabled_de43c155_92bd_41de_810c_fe08928639cb) {
-globalStore.enabled_de43c155_92bd_41de_810c_fe08928639cb = true;
+if (!globalStore.enabled_b6a06a73_7ed5_4aa8_91e6_94f7671f859e) {
+globalStore.enabled_b6a06a73_7ed5_4aa8_91e6_94f7671f859e = true;
 globalStore.countEnabled = globalStore.countEnabled + 1;
 }
 } else {
-if (globalStore.enabled_de43c155_92bd_41de_810c_fe08928639cb) {
-globalStore.enabled_de43c155_92bd_41de_810c_fe08928639cb = false;
+if (globalStore.enabled_b6a06a73_7ed5_4aa8_91e6_94f7671f859e) {
+globalStore.enabled_b6a06a73_7ed5_4aa8_91e6_94f7671f859e = false;
 globalStore.countEnabled = globalStore.countEnabled - 1;
 }
 }
 }
 
-var update_enabled_Gateway_0km538f = function() {
-if(globalStore.ent_Gateway_0km538f > 0) {
-if (!globalStore.enabled_Gateway_0km538f) {
-globalStore.enabled_Gateway_0km538f = true;
+var update_enabled_Activity_0htj0z1 = function() {
+if(globalStore.exi_Gateway_0ks9nf6 > 0) {
+if (!globalStore.enabled_Activity_0htj0z1) {
+globalStore.enabled_Activity_0htj0z1 = true;
 globalStore.countEnabled = globalStore.countEnabled + 1;
 }
 } else {
-if (globalStore.enabled_Gateway_0km538f) {
-globalStore.enabled_Gateway_0km538f = false;
+if (globalStore.enabled_Activity_0htj0z1) {
+globalStore.enabled_Activity_0htj0z1 = false;
 globalStore.countEnabled = globalStore.countEnabled - 1;
 }
 }
 }
 
-var update_enabled_Activity_1mp11bm = function() {
-if(globalStore.exi_Gateway_13lsnlh > 0) {
-if (!globalStore.enabled_Activity_1mp11bm) {
-globalStore.enabled_Activity_1mp11bm = true;
+var update_enabled_Activity_0pbzl84 = function() {
+if(globalStore.exi_Gateway_12ld03x > 0) {
+if (!globalStore.enabled_Activity_0pbzl84) {
+globalStore.enabled_Activity_0pbzl84 = true;
 globalStore.countEnabled = globalStore.countEnabled + 1;
 }
 } else {
-if (globalStore.enabled_Activity_1mp11bm) {
-globalStore.enabled_Activity_1mp11bm = false;
+if (globalStore.enabled_Activity_0pbzl84) {
+globalStore.enabled_Activity_0pbzl84 = false;
+globalStore.countEnabled = globalStore.countEnabled - 1;
+}
+}
+}
+
+var update_enabled_Activity_1typn28 = function() {
+if(globalStore.exi_Gateway_0ks9nf6 > 0) {
+if (!globalStore.enabled_Activity_1typn28) {
+globalStore.enabled_Activity_1typn28 = true;
+globalStore.countEnabled = globalStore.countEnabled + 1;
+}
+} else {
+if (globalStore.enabled_Activity_1typn28) {
+globalStore.enabled_Activity_1typn28 = false;
+globalStore.countEnabled = globalStore.countEnabled - 1;
+}
+}
+}
+
+var update_enabled_Gateway_12ld03x = function() {
+if(globalStore.ent_Gateway_12ld03x > 0) {
+if (!globalStore.enabled_Gateway_12ld03x) {
+globalStore.enabled_Gateway_12ld03x = true;
+globalStore.countEnabled = globalStore.countEnabled + 1;
+}
+} else {
+if (globalStore.enabled_Gateway_12ld03x) {
+globalStore.enabled_Gateway_12ld03x = false;
 globalStore.countEnabled = globalStore.countEnabled - 1;
 }
 }
 }
 
 
-var fire_Activity_1ntvmx3 = function() {
-globalStore.exi_Gateway_13lsnlh = globalStore.exi_Gateway_13lsnlh - 1;
-globalStore.ent_Gateway_0km538f = globalStore.ent_Gateway_0km538f + 1;
+var fire_sfl_Flow_1jx897x = function() {
+globalStore.exi_Gateway_12ld03x = globalStore.exi_Gateway_12ld03x - 1;
+globalStore.ent_Activity_10wv9wo = globalStore.ent_Activity_10wv9wo + 1;
 
-globalStore.fired_Activity_1ntvmx3 = globalStore.fired_Activity_1ntvmx3 + 1;
+globalStore.fired_sfl_Flow_1jx897x = globalStore.fired_sfl_Flow_1jx897x + 1;
 
 
 
-update_enabled_Gateway_0km538f();
-update_enabled_Activity_1mp11bm();
-update_enabled_Activity_1ntvmx3();
+update_enabled_Activity_0pbzl84();
+update_enabled_Activity_10wv9wo();
+update_enabled_sfl_Flow_1jx897x();
 }
 
 
-var fire_de43c155_92bd_41de_810c_fe08928639cb = function() {
+var fire_Activity_10wv9wo = function() {
+globalStore.ent_Activity_10wv9wo = globalStore.ent_Activity_10wv9wo - 1;
+globalStore.exi_Gateway_0ks9nf6 = globalStore.exi_Gateway_0ks9nf6 + 1;
+
+globalStore.fired_Activity_10wv9wo = globalStore.fired_Activity_10wv9wo + 1;
+
+
+
+update_enabled_Activity_1typn28();
+update_enabled_Activity_10wv9wo();
+update_enabled_Activity_0htj0z1();
+}
+
+
+var fire_b6a06a73_7ed5_4aa8_91e6_94f7671f859e = function() {
 globalStore.source = globalStore.source - 1;
-globalStore.exi_Gateway_13lsnlh = globalStore.exi_Gateway_13lsnlh + 1;
+globalStore.ent_Activity_10wv9wo = globalStore.ent_Activity_10wv9wo + 1;
 
-globalStore.fired_de43c155_92bd_41de_810c_fe08928639cb = globalStore.fired_de43c155_92bd_41de_810c_fe08928639cb + 1;
+globalStore.fired_b6a06a73_7ed5_4aa8_91e6_94f7671f859e = globalStore.fired_b6a06a73_7ed5_4aa8_91e6_94f7671f859e + 1;
 
 
 
-update_enabled_de43c155_92bd_41de_810c_fe08928639cb();
-update_enabled_Activity_1mp11bm();
-update_enabled_Activity_1ntvmx3();
+update_enabled_Activity_10wv9wo();
+update_enabled_b6a06a73_7ed5_4aa8_91e6_94f7671f859e();
 }
 
 
-var fire_Gateway_0km538f = function() {
-globalStore.ent_Gateway_0km538f = globalStore.ent_Gateway_0km538f - 1;
+var fire_Activity_0htj0z1 = function() {
+globalStore.exi_Gateway_0ks9nf6 = globalStore.exi_Gateway_0ks9nf6 - 1;
+globalStore.ent_Gateway_12ld03x = globalStore.ent_Gateway_12ld03x + 1;
+
+globalStore.fired_Activity_0htj0z1 = globalStore.fired_Activity_0htj0z1 + 1;
+
+
+
+update_enabled_Gateway_12ld03x();
+update_enabled_Activity_0htj0z1();
+update_enabled_Activity_1typn28();
+}
+
+
+var fire_Activity_0pbzl84 = function() {
+globalStore.exi_Gateway_12ld03x = globalStore.exi_Gateway_12ld03x - 1;
 globalStore.sink = globalStore.sink + 1;
 
-globalStore.fired_Gateway_0km538f = globalStore.fired_Gateway_0km538f + 1;
+globalStore.fired_Activity_0pbzl84 = globalStore.fired_Activity_0pbzl84 + 1;
 
 
 
-update_enabled_Gateway_0km538f();
+update_enabled_Activity_0pbzl84();
+update_enabled_sfl_Flow_1jx897x();
 }
 
 
-var fire_Activity_1mp11bm = function() {
-globalStore.exi_Gateway_13lsnlh = globalStore.exi_Gateway_13lsnlh - 1;
-globalStore.ent_Gateway_0km538f = globalStore.ent_Gateway_0km538f + 1;
+var fire_Activity_1typn28 = function() {
+globalStore.exi_Gateway_0ks9nf6 = globalStore.exi_Gateway_0ks9nf6 - 1;
+globalStore.ent_Gateway_12ld03x = globalStore.ent_Gateway_12ld03x + 1;
 
-globalStore.fired_Activity_1mp11bm = globalStore.fired_Activity_1mp11bm + 1;
+globalStore.fired_Activity_1typn28 = globalStore.fired_Activity_1typn28 + 1;
 
 
 
-update_enabled_Gateway_0km538f();
-update_enabled_Activity_1mp11bm();
-update_enabled_Activity_1ntvmx3();
+update_enabled_Gateway_12ld03x();
+update_enabled_Activity_0htj0z1();
+update_enabled_Activity_1typn28();
+}
+
+
+var fire_Gateway_12ld03x = function() {
+globalStore.ent_Gateway_12ld03x = globalStore.ent_Gateway_12ld03x - 1;
+globalStore.exi_Gateway_12ld03x = globalStore.exi_Gateway_12ld03x + 1;
+
+globalStore.fired_Gateway_12ld03x = globalStore.fired_Gateway_12ld03x + 1;
+
+
+
+update_enabled_Gateway_12ld03x();
+update_enabled_Activity_0pbzl84();
+update_enabled_sfl_Flow_1jx897x();
 }
 
 
@@ -149,7 +261,7 @@ var log_transition = function(transition) {
 if (transition !== "None") {
 globalStore.xesOutput += "<event>\n";
 globalStore.xesOutput +=  "<string key=\"concept:name\" value=\"" + transition + "\"/>\n";
-globalStore.xesOutput +=  "</event>\n";
+globalStore.xesOutput += "<string key=\"totalTime\" value=\"" + globalStore.totalTime + "\"/>\n";
 globalStore.trace += globalStore.xesOutput;
 }
 };
@@ -158,12 +270,18 @@ var simulator_loop = function(steps) {
 
 globalStore.xesOutput = "";
 
+// initialize a total‐time accumulator
+globalStore.totalTime = 0;
+
 var enabledTransitions = filter(function(x) {
-return (x == 0 && globalStore.enabled_Activity_1ntvmx3)||
-(x == 1 && globalStore.enabled_de43c155_92bd_41de_810c_fe08928639cb)||
-(x == 2 && globalStore.enabled_Gateway_0km538f)||
-(x == 3 && globalStore.enabled_Activity_1mp11bm);
-}, [0, 1, 2, 3]);
+return (x == 0 && globalStore.enabled_sfl_Flow_1jx897x)||
+(x == 1 && globalStore.enabled_Activity_10wv9wo)||
+(x == 2 && globalStore.enabled_b6a06a73_7ed5_4aa8_91e6_94f7671f859e)||
+(x == 3 && globalStore.enabled_Activity_0htj0z1)||
+(x == 4 && globalStore.enabled_Activity_0pbzl84)||
+(x == 5 && globalStore.enabled_Activity_1typn28)||
+(x == 6 && globalStore.enabled_Gateway_12ld03x);
+}, [0, 1, 2, 3, 4, 5, 6]);
 
 if (steps <= 0) {
 return;
@@ -198,21 +316,36 @@ var ps = map(function(w) {
 
 var transition = sample(Categorical({ vs: enabledTransitions, ps: ps }));
 
-if (transition == 0) {
-  log_transition("t1");
-  fire_Activity_1ntvmx3();
+
+
+var dur = globalStore.durations[transition];
+globalStore.totalTime = (globalStore.totalTime || 0) + dur;if (transition == 0) {
+  log_transition("None");
+  fire_sfl_Flow_1jx897x();
 }
 else if (transition == 1) {
-  log_transition("None");
-  fire_de43c155_92bd_41de_810c_fe08928639cb();
+  log_transition("t1:  5-10 min");
+  fire_Activity_10wv9wo();
 }
 else if (transition == 2) {
   log_transition("None");
-  fire_Gateway_0km538f();
+  fire_b6a06a73_7ed5_4aa8_91e6_94f7671f859e();
 }
 else if (transition == 3) {
-  log_transition("t2");
-  fire_Activity_1mp11bm();
+  log_transition("t2:  30-60 min");
+  fire_Activity_0htj0z1();
+}
+else if (transition == 4) {
+  log_transition("t4:  10-20 min");
+  fire_Activity_0pbzl84();
+}
+else if (transition == 5) {
+  log_transition("t3:  15-30 min");
+  fire_Activity_1typn28();
+}
+else if (transition == 6) {
+  log_transition("None");
+  fire_Gateway_12ld03x();
 }
 else {
   console.log("Selected illegal transition; should never happen.");
@@ -222,14 +355,17 @@ simulator_loop(steps - 1);
 
 var simulator = function(){
 init();
-update_enabled_Activity_1ntvmx3();
-update_enabled_de43c155_92bd_41de_810c_fe08928639cb();
-update_enabled_Gateway_0km538f();
-update_enabled_Activity_1mp11bm();
+update_enabled_sfl_Flow_1jx897x();
+update_enabled_Activity_10wv9wo();
+update_enabled_b6a06a73_7ed5_4aa8_91e6_94f7671f859e();
+update_enabled_Activity_0htj0z1();
+update_enabled_Activity_0pbzl84();
+update_enabled_Activity_1typn28();
+update_enabled_Gateway_12ld03x();
 
 globalStore.trace += "<trace>\n";
 
-simulator_loop(10);
+simulator_loop(100);
 
 globalStore.trace += "</trace>\n";
 

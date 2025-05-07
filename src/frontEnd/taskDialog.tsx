@@ -4,21 +4,22 @@ import './style.css';
 export interface TaskProps {
     id: string;
     name: string;
-    time: number;
+    timeMin: number;
+    timeMax: number;
 }
 
 export interface TaskDialogProps {
     task: TaskProps | null;
-    onFieldChange: (field: 'name' | 'time', value: string) => void;
+    onFieldChange: (field: 'name' | 'timeMin' | 'timeMax', value: string) => void;
     onUpdate: () => void;
-    onClose: () => void;            // ← new
+    onClose: () => void;
 }
 
 const TaskDialog: React.FC<TaskDialogProps> = ({
                                                    task,
                                                    onFieldChange,
                                                    onUpdate,
-                                                   onClose,                       // ← new
+                                                   onClose,
                                                }) => {
     const dialogRef = useRef<HTMLDivElement>(null);
 
@@ -54,12 +55,22 @@ const TaskDialog: React.FC<TaskDialogProps> = ({
             </div>
 
             <div className="gateway-field">
-                <label>Time (hrs):</label>
+                <label>Min time (min):</label>
                 <input
                     type="number"
                     step="1"
-                    value={task.time}
-                    onChange={e => onFieldChange('time', e.target.value)}
+                    value={task.timeMin}
+                    onChange={e => onFieldChange('timeMin', e.target.value)}
+                />
+            </div>
+
+            <div className="gateway-field">
+                <label>Max time (min):</label>
+                <input
+                    type="number"
+                    step="1"
+                    value={task.timeMax}
+                    onChange={e => onFieldChange('timeMax', e.target.value)}
                 />
             </div>
 

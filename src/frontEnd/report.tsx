@@ -5,6 +5,7 @@ export interface ReportEntry {
     trace: string;
     count: number;
     percentage: number;
+    avgTime: number;
 }
 
 export interface ReportModalProps {
@@ -39,6 +40,7 @@ const ReportModal: React.FC<ReportModalProps> = ({ show, loading, error, report,
                             <th style={{ textAlign: 'left', borderBottom: '1px solid #ccc' }}>Trace</th>
                             <th style={{ borderBottom: '1px solid #ccc' }}>Count</th>
                             <th style={{ borderBottom: '1px solid #ccc' }}>%</th>
+                            <th style={{ borderBottom: '1px solid #ccc' }}>Avg Time (min)</th>
                         </tr>
                         </thead>
                         <tbody>
@@ -47,6 +49,7 @@ const ReportModal: React.FC<ReportModalProps> = ({ show, loading, error, report,
                                 <td style={{ padding: '4px 0' }}>{r.trace}</td>
                                 <td style={{ textAlign: 'right' }}>{r.count}</td>
                                 <td style={{ textAlign: 'right' }}>{r.percentage}%</td>
+                                <td style={{ textAlign: 'right' }}>{r.avgTime} min</td>
                             </tr>
                         ))}
                         </tbody>
