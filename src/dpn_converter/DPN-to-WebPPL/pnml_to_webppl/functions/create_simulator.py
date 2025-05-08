@@ -16,9 +16,24 @@ def create_simulator_enabled_transitions_function(function_str, dpn, verbose):
     function_str += f"{joined_conditions};\n}}, [{indices}]);\n\n"
 
     # Add the check for no enabled transitions
-    function_str += """if (steps <= 0) {\nreturn;\n}\n\n"""
-    function_str += """if (enabledTransitions.length == 0) {\nreturn;\n}\n\n"""
-    function_str += """if (globalStore.""" + str(list(dpn.final_marking.keys())[0]) + """ > 0) {\nreturn;\n}\n\n"""
+    function_str += (
+                "if (globalStore." + str(list(dpn.final_marking.keys())[0]) + " > 0) {\n"
+                + "  log_transition(\"End\");\n"
+                + "  return;\n"
+                + "}\n\n"
+            )
+    function_str += (
+                "if (steps <= 0) {\n"
+              +   "  log_transition(\"Stuck\");\n"
+              +   "  return;\n"
+              + "}\n\n"
+            )
+    function_str += (
+                "if (enabledTransitions.length == 0) {\n"
+              +   "  log_transition(\"Stuck\");\n"
+              +   "  return;\n"
+              + "}\n\n"
+            )
 
     return function_str
 
