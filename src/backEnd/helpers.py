@@ -20,19 +20,34 @@ def parse_probabilities(bpmn_xml_str):
     return flow_probs, flow_targets
 
 def inject_probs_on_transitions(pnml_str, flow_probs, flow_targets):
-    """Inject <probability value="..."/> into the correct <transition> tags."""
     root = ET.fromstring(pnml_str)
-    transitions = { t.get('id'): t for t in root.findall('.//{*}transition') }
+    transitions = {
+        t.get('id'): t
+        for t in root.findall('.//{*}transition')
+        if t.get('id')
+    }
 
     for fid, prob in flow_probs.items():
-        target_id = flow_targets.get(fid, "")
-        trans = transitions.get(target_id) or transitions.get(fid)
+        tgt = flow_targets.get(fid)
+        trans = None
+        if fid in transitions:
+            trans = transitions[fid]
+        if trans is None:
+            for pid, elem in transitions.items():
+                if pid.endswith(fid):
+                    trans = elem
+                    break
+        if trans is None and tgt in transitions:
+            trans = transitions[tgt]
+
         if not trans:
-            print(f"[inject_probs] no transition for flow {fid}→{target_id}")
             continue
-        p = ET.Element('probability')
-        p.set('value', prob)
-        trans.append(p)
+        existing = trans.find('probability')
+        if existing is not None:
+            existing.set('value', prob)
+        else:
+            p = ET.Element('probability', {'value': prob})
+            trans.append(p)
 
     return ET.tostring(root, encoding='utf-8', method='xml').decode('utf-8')
 
