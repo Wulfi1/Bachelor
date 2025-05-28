@@ -177,8 +177,26 @@ const BpmnModelerComponent: React.FC = () => {
     setSelectedTask(null);
   }, [selectedTask]);
 
+  const handleExportBpmn = useCallback(async () => {
+    if (!modelerRef.current) return;
+    
+    const { xml } = await modelerRef.current.saveXML({ format: true });
+    if (!xml) {
+      console.error('No XML returned!');
+      return;
+    }
+    const blob = new Blob([xml], { type: 'application/xml' });
+    const link = document.createElement('a');
+    
+    link.href = URL.createObjectURL(blob);
+    link.download = 'BPMNdiagram.bpmn';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }, []);
 
-  const handleExport = useCallback(async (downloadFile: boolean) => {
+
+  const handleExportPNML = useCallback(async (downloadFile: boolean) => {
     if (!modelerRef.current) return;
     try {
       const { xml } = await modelerRef.current.saveXML({ format: true });
@@ -201,7 +219,7 @@ const BpmnModelerComponent: React.FC = () => {
       if(downloadFile) {
         const pnmlText = await response.text();
         const blob = new Blob([pnmlText], {type: 'application/xml'});
-        const fileName = 'diagram.pnml';
+        const fileName = 'PNMLdiagram.pnml';
         const url = URL.createObjectURL(blob);
 
         const link = document.createElement('a');
@@ -218,8 +236,36 @@ const BpmnModelerComponent: React.FC = () => {
     }
   }, []);
 
+  const handleExportWebppl = useCallback(async () => {
+    if (!modelerRef.current) return;
+    
+    await handleExportPNML(false);
+    
+    const res = await fetch('http://localhost:5002/convert_pnml_to_webppl', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        simulationSteps,
+        sampleSize,
+        download: true
+      })
+    });
+    if (!res.ok) {
+      console.error('Failed to fetch WebPPL:', res.statusText);
+      return;
+    }
+    const wpplText = await res.text();
+    const blob = new Blob([wpplText], { type: 'application/javascript' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = 'WebPPLmodel.wppl';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }, [sampleSize, simulationSteps, handleExportPNML]);
+
   const handleSimulate = useCallback(async () => {
-    await handleExport(false);
+    await handleExportPNML(false);
     setLoadingReport(true);
     setShowReport(true);
     setReportError(null);
@@ -238,16 +284,23 @@ const BpmnModelerComponent: React.FC = () => {
     } finally {
       setLoadingReport(false);
     }
-  }, [sampleSize, simulationSteps, handleExport]);
+  }, [sampleSize, simulationSteps, handleExportPNML]);
 
   return (
       <div style={{ width: '100%', height: '80vh', position: 'relative' }}>
-        <button onClick={() => handleExport(true)} style={{ marginLeft: 22 }} className="button">
+        <button onClick={handleExportBpmn} style={{ marginLeft: 22 }} className="button">
+          Export as BPMN
+        </button>
+        <button onClick={() => handleExportPNML(true)} style={{ marginLeft: 8 }} className="button">
           Export as PNML
+        </button>
+        <button onClick={() => handleExportWebppl()} style={{ marginLeft: 8 }} className="button">
+          Export as WebPPL
         </button>
         <button onClick={handleSimulate} style={{ marginLeft: 8 }} className="button">
           Simulate
         </button>
+        
         <span style={{ marginLeft: 12, fontSize: '0.9rem' }}>
         Sample size:
         <input

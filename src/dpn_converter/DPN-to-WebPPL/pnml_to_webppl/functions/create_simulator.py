@@ -44,7 +44,7 @@ def create_simulator_sample_transition_function(function_str, net, verbose):
 // build weight vector for enabled transitions
 var weights = map(function(i) {
   var p = globalStore.probabilities[i];
-  return (typeof p === 'number') ? p : 0;
+  return (typeof p === 'number') ? p : 1;
 }, enabledTransitions);
 
 // compute total weight via reduce (no for‐loops in WebPPL)

@@ -3,10 +3,9 @@ import os
 import sys
 sys.path.append(os.path.abspath('C:/Users/sebastian.wulf/RiderProjects/Bachelor/src/dpn_converter/DPN-to-WebPPL'))
 import traceback
-from flask import Flask, request, make_response, jsonify
+from flask import Flask, request, make_response, jsonify, send_file
 from flask_cors import CORS
 import tempfile
-import xml.etree.ElementTree as ET
 import subprocess, re
 from collections import Counter
 
@@ -84,19 +83,30 @@ def convert_pnml_to_webppl():
     
     simulationSteps = data['simulationSteps']
     sampleSize = data['sampleSize']
+    download        = data.get('download', False)
     
-    try:
-        path_pnml   = os.path.abspath('generated/converted.pnml')
-        webPPL_code = convert_dpn_to_webPPL(
-            path_pnml, verbose=True,
-            simulation_steps=simulationSteps,
-            sample_size=sampleSize 
+    
+    path_pnml   = os.path.abspath('generated/converted.pnml')
+    webPPL_code = convert_dpn_to_webPPL(
+        path_pnml, verbose=True,
+        simulation_steps=simulationSteps,
+        sample_size=sampleSize 
+    )
+
+    wppl_path = os.path.abspath('generated/simple_auction.wppl')
+    with open(wppl_path, 'w', encoding='utf-8') as f:
+        f.write(webPPL_code)
+
+    if download:
+        return send_file(
+            wppl_path,
+            as_attachment=True,
+            download_name='model.wppl',
+            mimetype='application/javascript'
         )
 
-        wppl_path = os.path.abspath('generated/simple_auction.wppl')
-        with open(wppl_path, 'w', encoding='utf-8') as f:
-            f.write(webPPL_code)
 
+    try:
         cmd = ['npx', '--yes', 'webppl', wppl_path]
         app.logger.info(f"Spawning WebPPL: {cmd}")
         proc = subprocess.run(
