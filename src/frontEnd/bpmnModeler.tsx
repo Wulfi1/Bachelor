@@ -6,7 +6,6 @@ import 'bpmn-js/dist/assets/bpmn-font/css/bpmn.css';
 import ReportModal, { ReportEntry } from './report';
 import GatewayDialog, {Flow} from './gateWayDialog';
 import TaskDialog, { TaskProps } from './taskDialog';
-//test
 import customPaletteProvider from "./customPaletteProvider";
 import ProbabilityExtension from "./ProbabilityExtension";
 import TimeExtension from "./TimeExtension";
