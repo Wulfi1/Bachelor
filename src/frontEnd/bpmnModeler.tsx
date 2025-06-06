@@ -31,6 +31,13 @@ const BpmnModelerComponent: React.FC = () => {
   // New state for simulation parameters
   const [sampleSize, setSampleSize] = useState<string>("10");
   const [simulationSteps, setSimulationSteps] = useState<string>("10");
+  
+  //Import ref
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const handleImportClick = () => {
+    fileInputRef.current?.click();
+  };
+
 
   const totalProbability = outgoingFlows.reduce((sum, flow) => {
     const val = parseFloat(flow.probability);
@@ -177,6 +184,30 @@ const BpmnModelerComponent: React.FC = () => {
     setSelectedTask(null);
   }, [selectedTask]);
 
+  const handleBpmnUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file || !modelerRef.current) return;
+
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      const xml = e.target?.result;
+      if (typeof xml === 'string') {
+        try {
+          await modelerRef.current!.importXML(xml);
+          const canvas = modelerRef.current!.get('canvas') as {
+            zoom: (arg: string | number) => void;
+          };
+          canvas.zoom('fit-viewport');
+          console.log('BPMN diagram imported successfully.');
+        } catch (err) {
+          console.error('Failed to import BPMN diagram:', err);
+        }
+      }
+    };
+    reader.readAsText(file);
+  };
+
+
   const handleExportBpmn = useCallback(async () => {
     if (!modelerRef.current) return;
     
@@ -288,7 +319,17 @@ const BpmnModelerComponent: React.FC = () => {
 
   return (
       <div style={{ width: '100%', height: '80vh', position: 'relative' }}>
-        <button onClick={handleExportBpmn} style={{ marginLeft: 22 }} className="button">
+        <input
+            type="file"
+            accept=".bpmn,application/xml"
+            ref={fileInputRef}
+            onChange={handleBpmnUpload}
+            style={{ display: 'none' }}
+        />
+        <button onClick={handleImportClick} className="button" style={{ marginLeft: 22 }}>
+          Import BPMN
+        </button>
+        <button onClick={handleExportBpmn} style={{ marginLeft: 8 }} className="button">
           Export as BPMN
         </button>
         <button onClick={() => handleExportPNML(true)} style={{ marginLeft: 8 }} className="button">

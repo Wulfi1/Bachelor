@@ -4,6 +4,11 @@
       <text />
     </name>
     <page id="n0">
+      <place id="sink">
+        <name>
+          <text>sink</text>
+        </name>
+      </place>
       <place id="source">
         <name>
           <text>source</text>
@@ -12,9 +17,9 @@
           <text>1</text>
         </initialMarking>
       </place>
-      <place id="sink">
+      <place id="exi_Gateway_0dwauce">
         <name>
-          <text>sink</text>
+          <text>exi_Gateway_0dwauce</text>
         </name>
       </place>
       <place id="ent_Gateway_19qbfig">
@@ -22,39 +27,34 @@
           <text>ent_Gateway_19qbfig</text>
         </name>
       </place>
-      <place id="exi_Gateway_0dwauce">
-        <name>
-          <text>exi_Gateway_0dwauce</text>
-        </name>
-      </place>
       <transition id="Activity_1peodm0">
         <name>
           <text>t1:  10-20 min</text>
         </name>
       <time min="10.0" max="20.0" /></transition>
-      <transition id="Activity_09n14ux">
-        <name>
-          <text>t4:  30-60 min</text>
-        </name>
-      <time min="30.0" max="60.0" /></transition>
-      <transition id="Activity_07yj2ya">
-        <name>
-          <text>t2:  15-30 min</text>
-        </name>
-      <probability value="0.2" /><time min="15.0" max="30.0" /></transition>
       <transition id="Activity_10wqleg">
         <name>
           <text>t3:  20-40 min</text>
         </name>
       <probability value="0.8" /><time min="20.0" max="40.0" /></transition>
-      <arc id="2047601396096" source="Activity_1peodm0" target="exi_Gateway_0dwauce" />
-      <arc id="2047601395872" source="source" target="Activity_1peodm0" />
-      <arc id="2047601396768" source="ent_Gateway_19qbfig" target="Activity_09n14ux" />
-      <arc id="2047601399456" source="Activity_07yj2ya" target="ent_Gateway_19qbfig" />
-      <arc id="2047601395760" source="Activity_09n14ux" target="sink" />
-      <arc id="2047601396320" source="Activity_10wqleg" target="ent_Gateway_19qbfig" />
-      <arc id="2047601395424" source="exi_Gateway_0dwauce" target="Activity_07yj2ya" />
-      <arc id="2047601395312" source="exi_Gateway_0dwauce" target="Activity_10wqleg" />
+      <transition id="Activity_07yj2ya">
+        <name>
+          <text>t2:  15-30 min</text>
+        </name>
+      <probability value="0.2" /><time min="15.0" max="30.0" /></transition>
+      <transition id="Activity_09n14ux">
+        <name>
+          <text>t4:  30-60 min</text>
+        </name>
+      <time min="30.0" max="60.0" /></transition>
+      <arc id="1654695114272" source="exi_Gateway_0dwauce" target="Activity_10wqleg" />
+      <arc id="1654695108672" source="Activity_07yj2ya" target="ent_Gateway_19qbfig" />
+      <arc id="1654695110464" source="ent_Gateway_19qbfig" target="Activity_09n14ux" />
+      <arc id="1654695106656" source="source" target="Activity_1peodm0" />
+      <arc id="1654695109344" source="Activity_09n14ux" target="sink" />
+      <arc id="1654695115616" source="exi_Gateway_0dwauce" target="Activity_07yj2ya" />
+      <arc id="1654695102176" source="Activity_1peodm0" target="exi_Gateway_0dwauce" />
+      <arc id="1654695102064" source="Activity_10wqleg" target="ent_Gateway_19qbfig" />
     </page>
   <finalmarkings><marking><place idref="sink"><text>1</text></place></marking></finalmarkings></net>
 </pnml>

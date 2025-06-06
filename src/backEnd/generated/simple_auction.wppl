@@ -1,14 +1,14 @@
 
 // Transition IDs in sampling order
-var idList = ["Activity_1peodm0","Activity_07yj2ya","Activity_09n14ux","Activity_10wqleg"];
+var idList = ["Activity_1peodm0","Activity_10wqleg","Activity_09n14ux","Activity_07yj2ya"];
 
 // Probabilities map (default 1)
-var probMap = { "Activity_07yj2ya":0.2,"Activity_10wqleg":0.8 };
+var probMap = { "Activity_10wqleg":0.8,"Activity_07yj2ya":0.2 };
 var probabilities = map(function(id) { return probMap[id] != null ? probMap[id] : 1; }, idList);
 
 // Time interval maps and sampled durations
-var timeMinMap = { "Activity_1peodm0":10.0,"Activity_07yj2ya":15.0,"Activity_09n14ux":30.0,"Activity_10wqleg":20.0 };
-var timeMaxMap = { "Activity_1peodm0":20.0,"Activity_07yj2ya":30.0,"Activity_09n14ux":60.0,"Activity_10wqleg":40.0 };
+var timeMinMap = { "Activity_1peodm0":10.0,"Activity_10wqleg":20.0,"Activity_09n14ux":30.0,"Activity_07yj2ya":15.0 };
+var timeMaxMap = { "Activity_1peodm0":20.0,"Activity_10wqleg":40.0,"Activity_09n14ux":60.0,"Activity_07yj2ya":30.0 };
 var durations   = map(function(id) { 
     var mn = timeMinMap[id], mx = timeMaxMap[id]; 
     return (typeof mn === 'number' && typeof mx === 'number') 
@@ -24,20 +24,20 @@ globalStore.durations    = durations;
 var init = function(){
 globalStore.countEnabled = 0;
 globalStore.trace = "";
-globalStore.source = 1;
 globalStore.sink = 0;
 globalStore.exi_Gateway_0dwauce = 0;
 globalStore.ent_Gateway_19qbfig = 0;
+globalStore.source = 1;
 
 globalStore.enabled_Activity_1peodm0 = false; // t1:  10-20 min
-globalStore.enabled_Activity_07yj2ya = false; // t2:  15-30 min
-globalStore.enabled_Activity_09n14ux = false; // t4:  30-60 min
 globalStore.enabled_Activity_10wqleg = false; // t3:  20-40 min
+globalStore.enabled_Activity_09n14ux = false; // t4:  30-60 min
+globalStore.enabled_Activity_07yj2ya = false; // t2:  15-30 min
 
 globalStore.fired_Activity_1peodm0 = 0;
-globalStore.fired_Activity_07yj2ya = 0;
-globalStore.fired_Activity_09n14ux = 0;
 globalStore.fired_Activity_10wqleg = 0;
+globalStore.fired_Activity_09n14ux = 0;
+globalStore.fired_Activity_07yj2ya = 0;
 
 globalStore.vars = {  };
 
@@ -57,15 +57,15 @@ globalStore.countEnabled = globalStore.countEnabled - 1;
 }
 }
 
-var update_enabled_Activity_07yj2ya = function() {
+var update_enabled_Activity_10wqleg = function() {
 if(globalStore.exi_Gateway_0dwauce > 0) {
-if (!globalStore.enabled_Activity_07yj2ya) {
-globalStore.enabled_Activity_07yj2ya = true;
+if (!globalStore.enabled_Activity_10wqleg) {
+globalStore.enabled_Activity_10wqleg = true;
 globalStore.countEnabled = globalStore.countEnabled + 1;
 }
 } else {
-if (globalStore.enabled_Activity_07yj2ya) {
-globalStore.enabled_Activity_07yj2ya = false;
+if (globalStore.enabled_Activity_10wqleg) {
+globalStore.enabled_Activity_10wqleg = false;
 globalStore.countEnabled = globalStore.countEnabled - 1;
 }
 }
@@ -85,15 +85,15 @@ globalStore.countEnabled = globalStore.countEnabled - 1;
 }
 }
 
-var update_enabled_Activity_10wqleg = function() {
+var update_enabled_Activity_07yj2ya = function() {
 if(globalStore.exi_Gateway_0dwauce > 0) {
-if (!globalStore.enabled_Activity_10wqleg) {
-globalStore.enabled_Activity_10wqleg = true;
+if (!globalStore.enabled_Activity_07yj2ya) {
+globalStore.enabled_Activity_07yj2ya = true;
 globalStore.countEnabled = globalStore.countEnabled + 1;
 }
 } else {
-if (globalStore.enabled_Activity_10wqleg) {
-globalStore.enabled_Activity_10wqleg = false;
+if (globalStore.enabled_Activity_07yj2ya) {
+globalStore.enabled_Activity_07yj2ya = false;
 globalStore.countEnabled = globalStore.countEnabled - 1;
 }
 }
@@ -108,23 +108,23 @@ globalStore.fired_Activity_1peodm0 = globalStore.fired_Activity_1peodm0 + 1;
 
 
 
-update_enabled_Activity_1peodm0();
-update_enabled_Activity_10wqleg();
 update_enabled_Activity_07yj2ya();
+update_enabled_Activity_10wqleg();
+update_enabled_Activity_1peodm0();
 }
 
 
-var fire_Activity_07yj2ya = function() {
+var fire_Activity_10wqleg = function() {
 globalStore.exi_Gateway_0dwauce = globalStore.exi_Gateway_0dwauce - 1;
 globalStore.ent_Gateway_19qbfig = globalStore.ent_Gateway_19qbfig + 1;
 
-globalStore.fired_Activity_07yj2ya = globalStore.fired_Activity_07yj2ya + 1;
+globalStore.fired_Activity_10wqleg = globalStore.fired_Activity_10wqleg + 1;
 
 
 
 update_enabled_Activity_10wqleg();
-update_enabled_Activity_09n14ux();
 update_enabled_Activity_07yj2ya();
+update_enabled_Activity_09n14ux();
 }
 
 
@@ -140,17 +140,17 @@ update_enabled_Activity_09n14ux();
 }
 
 
-var fire_Activity_10wqleg = function() {
+var fire_Activity_07yj2ya = function() {
 globalStore.exi_Gateway_0dwauce = globalStore.exi_Gateway_0dwauce - 1;
 globalStore.ent_Gateway_19qbfig = globalStore.ent_Gateway_19qbfig + 1;
 
-globalStore.fired_Activity_10wqleg = globalStore.fired_Activity_10wqleg + 1;
+globalStore.fired_Activity_07yj2ya = globalStore.fired_Activity_07yj2ya + 1;
 
 
 
 update_enabled_Activity_10wqleg();
-update_enabled_Activity_09n14ux();
 update_enabled_Activity_07yj2ya();
+update_enabled_Activity_09n14ux();
 }
 
 
@@ -182,9 +182,9 @@ globalStore.totalTime = 0;
 
 var enabledTransitions = filter(function(x) {
 return (x == 0 && globalStore.enabled_Activity_1peodm0)||
-(x == 1 && globalStore.enabled_Activity_07yj2ya)||
+(x == 1 && globalStore.enabled_Activity_10wqleg)||
 (x == 2 && globalStore.enabled_Activity_09n14ux)||
-(x == 3 && globalStore.enabled_Activity_10wqleg);
+(x == 3 && globalStore.enabled_Activity_07yj2ya);
 }, [0, 1, 2, 3]);
 
 if (globalStore.sink > 0) {
@@ -231,16 +231,16 @@ globalStore.totalTime = (globalStore.totalTime || 0) + dur;if (transition == 0) 
   fire_Activity_1peodm0();
 }
 else if (transition == 1) {
-  log_transition("t2:  15-30 min");
-  fire_Activity_07yj2ya();
+  log_transition("t3:  20-40 min");
+  fire_Activity_10wqleg();
 }
 else if (transition == 2) {
   log_transition("t4:  30-60 min");
   fire_Activity_09n14ux();
 }
 else if (transition == 3) {
-  log_transition("t3:  20-40 min");
-  fire_Activity_10wqleg();
+  log_transition("t2:  15-30 min");
+  fire_Activity_07yj2ya();
 }
 else {
   console.log("Selected illegal transition; should never happen.");
@@ -251,9 +251,9 @@ simulator_loop(steps - 1);
 var simulator = function(){
 init();
 update_enabled_Activity_1peodm0();
-update_enabled_Activity_07yj2ya();
-update_enabled_Activity_09n14ux();
 update_enabled_Activity_10wqleg();
+update_enabled_Activity_09n14ux();
+update_enabled_Activity_07yj2ya();
 
 globalStore.trace += "<trace>\n";
 
@@ -268,6 +268,6 @@ return;
 
 var dist = Infer({
 method: 'forward', 
-samples: 10,
+samples: 100,
 },simulator);
 

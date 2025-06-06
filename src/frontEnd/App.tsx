@@ -14,7 +14,7 @@ function App() {
             }}
         >
             <div style={{ marginLeft: 22 }}>
-                <h1>My BPMN Modeler</h1>
+                <h1>BPMN Simulator</h1>
             </div>
             <BpmnModelerComponent />
         </div>

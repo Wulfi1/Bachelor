@@ -116,7 +116,11 @@
     color: white;
     border: none;
     padding: 8px 12px;
+    height: 36px;              
+    line-height: 20px;    
     cursor: pointer;
+    display: inline-block;    
+    vertical-align: middle;
 }
 
 .gateway-button:disabled {
