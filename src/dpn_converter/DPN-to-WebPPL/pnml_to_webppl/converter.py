@@ -49,17 +49,14 @@ var probabilities = map(function(id) {{ return probMap[id] != null ? probMap[id]
 // Time interval maps and sampled durations
 var timeMinMap = {{ {js_time_min_entries} }};
 var timeMaxMap = {{ {js_time_max_entries} }};
-var durations   = map(function(id) {{ 
-    var mn = timeMinMap[id], mx = timeMaxMap[id]; 
-    return (typeof mn === 'number' && typeof mx === 'number') 
-           ? uniform(mn, mx) 
-           : 0; 
-}}, idList);
 
 // Store globally
 globalStore.idList        = idList;
 globalStore.probabilities = probabilities;
-globalStore.durations    = durations;
+globalStore.timeMinMap = timeMinMap;
+globalStore.timeMaxMap = timeMaxMap;
+
+
 
 """
 

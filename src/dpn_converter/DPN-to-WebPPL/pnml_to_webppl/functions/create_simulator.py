@@ -62,7 +62,11 @@ var ps = map(function(w) {
 
 var transition = sample(Categorical({ vs: enabledTransitions, ps: ps }));\n\n
 
-var dur = globalStore.durations[transition];
+var id = globalStore.idList[transition];
+var mn = globalStore.timeMinMap[id], mx = globalStore.timeMaxMap[id];
+var dur = (typeof mn === 'number' && typeof mx === 'number') 
+    ? uniform(mn, mx)
+    : 0;
 globalStore.totalTime = (globalStore.totalTime || 0) + dur;"""
 
     # --- logging and firing logic for each transition index ---
