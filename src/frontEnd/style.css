@@ -29,6 +29,13 @@
     margin-bottom: 8px;
 }
 
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
 .modal-print,
 .modal-close {
     border: none;
@@ -46,18 +53,16 @@
     margin-left: 8px;  
 }
 
+.modal-actions {
+    display: flex;
+    gap: 8px;
+}
+
 .modal-print:hover,
 .modal-close:hover {
     background: #ddd;
 }
 
-.modal-close {
-    position: absolute;
-    top: 8px;
-    right: 8px;
-    background: transparent;
-    font-size: 18px;
-}
 
 .spinner {
     border: 4px solid #f3f3f3;

@@ -13,10 +13,12 @@ export interface ReportModalProps {
     loading: boolean;
     error: string | null;
     report: ReportEntry[] | null;
+    sampleSize: string;
+    simulationSteps: string;
     onClose: () => void;
 }
 
-const ReportModal: React.FC<ReportModalProps> = ({ show, loading, error, report, onClose }) => {
+const ReportModal: React.FC<ReportModalProps> = ({ show, loading, error, report, sampleSize, simulationSteps, onClose }) => {
     if (!show) return null
     const cleanTrace = (trace: string) =>
         trace.split('→')
@@ -26,16 +28,17 @@ const ReportModal: React.FC<ReportModalProps> = ({ show, loading, error, report,
     return (
         <div className="modal-overlay">
             <div className="modal-content">
-                <div className="modal-headers">
-                  <button onClick={() => window.print()} className="modal-print">
-                    🖨️ Print
-                  </button>
-                <button onClick={onClose} className="modal-close">
-                    ×
-                </button>
+                <div className="modal-header">
+                    <h3>Simulation Report</h3>
+                    <div className="modal-actions">
+                        <button onClick={() => window.print()} className="modal-print">🖨️ Print</button>
+                        <button onClick={onClose}          className="modal-close">×</button>
+                    </div>
                 </div>
-                <h3>Simulation Report</h3>
-
+                <div className="report-params">
+                    <span><strong>Sample size:</strong> {sampleSize}</span>
+                    <span style={{ marginLeft: 16 }}><strong>Simulation steps:</strong> {simulationSteps}</span>
+                </div>
                 {loading && (
                     <div className="spinner" />
                 )}

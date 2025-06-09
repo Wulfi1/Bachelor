@@ -385,6 +385,8 @@ const BpmnModelerComponent: React.FC = () => {
             loading={loadingReport}
             error={reportError}
             report={report}
+            sampleSize={sampleSize}
+            simulationSteps={simulationSteps}
             onClose={() => setShowReport(false)}
         />
       </div>
