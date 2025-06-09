@@ -21,7 +21,7 @@ A web-based framework for drawing BPMN diagrams, annotating them with probabilit
 
 ### 1. Clone the repo
 ```
-git clone https://github.com/your-org/stochastic-bpmn-sim.git
+https://github.com/Wulfi1/Bachelor.git
 ```
 
 ### 2. Frontend
@@ -41,6 +41,20 @@ python app.py             # starts the Flask server
 ```
 ### 4. DPN-to-WebPPL Converter
 ```
-cd src/backEnd/dpn-converter/DPN-to-WebPPL
+cd src/dpn-converter/DPN-to-WebPPL
 pip install -r requirements.txt
 ```
+
+## Dockerbuild
+
+To build the docker image, stay in the root directory and run:
+### 1. Build the image
+```
+docker build -t stochastic-bpmn-simulator .
+```
+### 2. Run the container
+```
+docker run -p 5002:5002 -p 3000:3000 stochastic-bpmn-simulator
+```
+### 3. Access the app
+Navigate your browser to `http://localhost:3000`
